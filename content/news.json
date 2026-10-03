@@ -8,7 +8,16 @@
       "link": "https://open.spotify.com/album/3oG4AVbBcS29V9o9uxxFZU",
       "linkLabel": "Listen on Spotify",
       "pinned": true,
-      "hideAfter": ""
+      "hideAfter": "2026-10-03"
+    },
+    {
+      "title": "YOU HAVE TO READ THIS!!",
+      "category": "Announcements",
+      "date": "2026-10-03",
+      "body": "I just posted something on tik tok :) and other platforms cus im cool.",
+      "image": "/assets/news/IMG_3490.jpg",
+      "pinned": false,
+      "hideAfter": "2026-10-03"
     }
   ]
 }
