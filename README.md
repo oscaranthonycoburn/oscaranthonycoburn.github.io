@@ -3,7 +3,7 @@
 Promo site for Oscar A. Coburn's debut EP (released October 2, 2026). It's plain HTML/CSS/JS. GSAP + ScrollTrigger and Lenis load from CDNs, so there's no build step.
 
 ## Assets
-- `assets/cover.jpg`: the EP cover (1215×1286, trimmed from the supplied art). Used in the hero, the record sleeve and the vinyl label. The art itself reads "Oscar M. Coburn"; all site text uses "Oscar A. Coburn".
+- `assets/cover.jpg`: the EP cover (1003×1062, trimmed from the supplied art; reads "Oscar A. Coburn"). Used in the hero, the record sleeve, the vinyl label, the Library and the "Listen on" chooser.
 - `assets/og-image.jpg`: the 1200×630 social preview (cover + title).
 - `assets/favicon.png` and `assets/apple-touch-icon.png`: square crops of the cover.
 
