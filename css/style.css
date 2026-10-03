@@ -294,7 +294,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
   font-size: clamp(20px, 5.4vw, 26px); line-height: 1.4; color: var(--cream);
 }
 .bio-quote cite { display: block; margin-top: 10px; font-style: normal; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
-.artist-grid { display: grid; gap: var(--space-block); }
+.artist-grid { display: grid; gap: var(--space-block); grid-template-areas: "lead" "body" "facts"; }
+.artist-lead { grid-area: lead; }
+.artist-body { grid-area: body; }
+.artist-grid > .facts { grid-area: facts; margin: 0; }
 .roles {
   list-style: none; margin: 0; padding: 0; display: grid; grid-auto-flow: column; grid-auto-columns: auto;
   width: fit-content; max-width: 100%; border-radius: 999px; overflow: hidden;
@@ -652,7 +655,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .follow-grid { grid-template-columns: repeat(3, 1fr); }
   .follow-grid > :last-child:nth-child(odd) { grid-column: auto; }
   .deck { grid-template-columns: 1.15fr 1fr; gap: 40px; }
-  .artist-grid { grid-template-columns: 1fr 1.1fr; gap: 40px; align-items: start; }
+  /* left: roles, quote, facts / right: the bio, full height */
+  .artist-grid { grid-template-columns: 1fr 1.1fr; grid-template-areas: "lead body" "facts body"; gap: var(--space-block) 40px; align-items: start; }
   .contact-grid { grid-template-columns: 1fr 1.25fr; gap: 40px; align-items: start; }
 }
 
