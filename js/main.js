@@ -148,12 +148,45 @@
 
     function say(msg, kind) { status.textContent = msg; status.dataset.kind = kind || ""; }
 
+    // Name, a real-looking email and a message are all required. The Send button stays
+    // disabled until they are, and each field explains what's missing once it's been touched.
+    const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    const RULES = {
+      name: v => v.trim() ? "" : "Add your name.",
+      email: v => !v.trim() ? "Enter your email so Oscar can reply."
+                : EMAIL.test(v.trim()) ? "" : "That doesn't look like an email (like name@gmail.com).",
+      message: v => v.trim() ? "" : "Write your question or message."
+    };
+    const touched = new Set();
+    function check(showAll) {
+      let ok = true;
+      Object.keys(RULES).forEach(n => {
+        const input = form.elements[n], err = RULES[n](input.value);
+        if (err) ok = false;
+        const show = err && (showAll || touched.has(n));
+        input.closest(".field").classList.toggle("is-invalid", !!show);
+        input.setAttribute("aria-invalid", show ? "true" : "false");
+        $("#" + n + "Error").textContent = show ? err : "";
+      });
+      send.disabled = !ok;
+      return ok;
+    }
+    Object.keys(RULES).forEach(n => {
+      const input = form.elements[n];
+      input.addEventListener("input", () => check());
+      input.addEventListener("blur", () => { touched.add(n); check(); });
+    });
+    check();
+
     form.addEventListener("submit", async e => {
       e.preventDefault();
       const f = Object.fromEntries(new FormData(form));
       if (f.botcheck) return;                                       // a bot filled the hidden box
-      if (!f.name.trim() || !f.message.trim()) return say("Please add your name and a message.", "error");
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) return say("Please enter a valid email so Oscar can reply.", "error");
+      if (!check(true)) {                                           // backup check at send time
+        const bad = form.querySelector('[aria-invalid="true"]');
+        bad && bad.focus();
+        return say("Please fill in the highlighted fields.", "error");
+      }
       const subject = `${f.topic}: message from ${f.name.trim()} (website)`;
 
       if (!C.web3formsKey) {
@@ -175,11 +208,12 @@
         const out = await res.json().catch(() => ({}));
         if (!res.ok || out.success === false) throw new Error(out.message || "failed");
         form.reset();
+        touched.clear();
         say("Sent! Oscar will get back to you at the email you gave.", "ok");
       } catch (_) {
         say("That didn't go through. Try again, or use “Email Oscar directly” above.", "error");
       } finally {
-        send.disabled = false;
+        check();
       }
     });
   })();

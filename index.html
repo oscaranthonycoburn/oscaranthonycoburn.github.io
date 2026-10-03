@@ -183,14 +183,14 @@
         </div>
         <form class="contact-form" id="contactForm" novalidate data-fade>
           <div class="field-row">
-            <label class="field"><span>Name</span><input name="name" type="text" autocomplete="name" required maxlength="80"></label>
-            <label class="field"><span>Your email</span><input name="email" type="email" autocomplete="email" required maxlength="120"></label>
+            <label class="field"><span>Name</span><input name="name" type="text" autocomplete="name" required maxlength="80" aria-describedby="nameError"><small class="field-error" id="nameError"></small></label>
+            <label class="field"><span>Your email <em>(required so Oscar can reply)</em></span><input name="email" type="email" inputmode="email" autocomplete="email" required maxlength="120" aria-describedby="emailError"><small class="field-error" id="emailError"></small></label>
           </div>
           <label class="field"><span>Topic</span><select name="topic" id="contactTopic"></select></label>
-          <label class="field"><span>Message</span><textarea name="message" rows="5" required maxlength="4000"></textarea></label>
+          <label class="field"><span>Message</span><textarea name="message" rows="5" required maxlength="4000" aria-describedby="messageError"></textarea><small class="field-error" id="messageError"></small></label>
           <!-- spam trap: real people never see or fill this -->
           <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <button class="btn btn-red contact-send" type="submit">Send message</button>
+          <button class="btn btn-red contact-send" type="submit" disabled>Send message</button>
           <p class="contact-status" id="contactStatus" role="status" aria-live="polite"></p>
         </form>
       </div>

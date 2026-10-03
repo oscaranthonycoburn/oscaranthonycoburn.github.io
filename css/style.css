@@ -516,7 +516,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .contact-send { width: 100%; margin-top: 4px; }
-.contact-send:disabled { opacity: .6; cursor: wait; }
+.contact-send:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; transform: none; }
+.field span em { font-style: normal; text-transform: none; letter-spacing: 0; color: var(--muted); font-weight: 500; }
+.field-error { min-height: 0; font-size: 13px; color: #ff8a7a; }
+.field-error:empty { display: none; }
+.field.is-invalid input, .field.is-invalid textarea { border-color: #ff8a7a; box-shadow: 0 0 0 3px rgba(255, 138, 122, .18); }
 .contact-status { margin: 0; min-height: 1.4em; font-size: 14px; color: var(--muted); }
 .contact-status[data-kind="ok"] { color: var(--amber); }
 .contact-status[data-kind="error"] { color: #ff8a7a; }
