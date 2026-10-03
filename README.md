@@ -46,6 +46,11 @@ The "Ask Oscar" section on Home (`#contact`) lets anyone send Oscar a message. H
 - **Without a key:** the form opens the visitor's own email app with the message filled in.
 - Edit the topic list in `contact.topics`.
 
+## Search (Google)
+- `index.html` has schema.org structured data (artist, the EP and its 5 tracks, streaming/social links) in a `<script type="application/ld+json">` block, plus a canonical link. Keep it in sync with `js/data.js` when releases change.
+- `sitemap.xml` lists the site; `robots.txt` points to it. Update `<lastmod>` in the sitemap after big changes.
+- Google Search Console: property `https://oscaranthonycoburn.github.io/` (URL-prefix), verified with an HTML meta tag in `index.html`; sitemap submitted there.
+
 ## Deploy
 Hosted free on GitHub Pages from the `oscaranthonycoburn/oscaranthonycoburn.github.io` repo (branch `main`, root), live at https://oscaranthonycoburn.github.io/. Pushing to `main` republishes in about a minute.
 

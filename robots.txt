@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://oscaranthonycoburn.github.io/sitemap.xml
