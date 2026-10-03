@@ -234,7 +234,19 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .hero-title .char { display: inline-block; }
 .hero-artist { margin: 14px 0 0; font-family: var(--display); font-size: 28px; letter-spacing: .14em; color: var(--cream); }
 .hero-meta { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
-.hero-ctas { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-tight); margin-top: var(--space-block); }
+.hero-ctas {
+  /* phone: Listen Now full width, Spotify + Apple Music as equal halves below */
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-tight);
+  width: 100%; max-width: 520px; margin: var(--space-block) auto 0;
+}
+.hero-ctas > :first-child { grid-column: 1 / -1; }
+.hero-ctas .btn { width: 100%; min-width: 0; padding: 0 12px; gap: 8px; font-size: 20px; white-space: nowrap; }
+.hero-ctas .btn svg { width: 18px; height: 18px; }
+@media (min-width: 480px) {
+  /* wider screens: three equal buttons in one row */
+  .hero-ctas { grid-template-columns: repeat(3, 1fr); }
+  .hero-ctas > :first-child { grid-column: auto; }
+}
 
 /* ---------- Sections ---------- */
 .section { padding: calc(var(--space-section) / 2) var(--gutter); max-width: var(--content); margin: 0 auto; }
@@ -527,7 +539,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .hero { flex-direction: row; gap: 64px; text-align: left; }
   .hero-copy { flex: 1; min-width: 0; }
   .cover-wrap { width: min(40vw, 460px); flex: none; }
-  .hero-ctas { justify-content: flex-start; }
+  .hero-ctas { margin-left: 0; }
   .follow-grid { grid-template-columns: repeat(3, 1fr); }
   .follow-grid > :last-child:nth-child(odd) { grid-column: auto; }
   .deck { grid-template-columns: 1.15fr 1fr; gap: 40px; }
