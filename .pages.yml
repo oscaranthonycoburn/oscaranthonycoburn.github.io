@@ -28,8 +28,11 @@ content:
             options:
               values: [Releases, Shows, Videos, Announcements, Behind the Scenes]
           - name: date
-            label: Date
+            label: Date & time posted
             type: date
+            options:
+              time: true
+            description: Leave this as now for new posts. A new post sets off the breaking-news sirens for 30 seconds after it goes live.
           - name: body
             label: Text
             type: text

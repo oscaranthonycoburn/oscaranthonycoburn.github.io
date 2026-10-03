@@ -32,6 +32,14 @@ The News tab (`#news`) is laid out like a newspaper front page: a dateline, sect
 
 Either way the live site updates about a minute after saving.
 
+## Breaking-news alarm
+When a new News post goes live, everyone on the site gets sirens (several different ones, synthesized in `js/alarm.js`) plus red police-light beams and a "Breaking news" banner, until 30 seconds after the post went live. Then it's gone for good.
+- Open pages check `content/news.json` every 8 seconds; a post that wasn't there before triggers it. Someone opening the site fresh gets it if the newest post's date/time is within 5 minutes before the file went live. Timing uses GitHub's Last-Modified and Date headers, so it ends at the same moment for everyone.
+- Post times come from the "Date & time posted" field in Pages CMS, written in Arizona time (`alarm.timezone`).
+- Browsers allow sound only after the visitor has clicked/tapped the page; otherwise the sirens start at their first tap. Volume tops out at the visitor's device volume.
+- Flash safety: the glow pulses ~2×/s and the beams rotate rather than strobe (under the 3 flashes/s seizure limit); "Reduce motion" users get a still red screen. Visitors can hit Silence.
+- Preview it any time with `?alarmtest` at the end of the address. Turn it off with `alarm.enabled: false` in `js/data.js`.
+
 ## Ask Oscar (contact form)
 The "Ask Oscar" section on Home (`#contact`) lets anyone send Oscar a message. His address is stored split up in `contact` in `js/data.js`, so it never appears whole in the page (keeps spam bots away).
 - **With a Web3Forms key** (free, https://web3forms.com): messages are emailed straight to Oscar, with the visitor's address as reply-to, so he just hits Reply. Paste the key into `contact.web3formsKey`.

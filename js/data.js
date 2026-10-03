@@ -49,6 +49,11 @@ window.SITE = {
     { key: "bts",          name: "Behind the Scenes" }
   ],
 
+  // Breaking-news alarm: for the first `seconds` after a new News post goes live, everyone
+  // on the site gets sirens + red police-light beams. `timezone` is the offset the post
+  // times are written in (Arizona). Set enabled: false to switch it off.
+  alarm: { enabled: true, seconds: 30, pollSeconds: 8, timezone: "-07:00" },
+
   // Background music: loops forever behind the whole site. Fades out while a song video
   // plays and back in when it's paused. `seconds` = the original file length (keeps the loop seamless).
   background: { src: "assets/audio/background.m4a", seconds: 126.526, volume: 0.6 },

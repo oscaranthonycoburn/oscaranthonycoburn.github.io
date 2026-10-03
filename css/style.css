@@ -610,6 +610,56 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .listen-spotify:hover { border-color: color-mix(in srgb, var(--spotify) 60%, transparent); box-shadow: 0 12px 30px -14px color-mix(in srgb, var(--spotify) 60%, transparent); }
 .listen-apple:hover { border-color: color-mix(in srgb, var(--apple) 60%, transparent); box-shadow: 0 12px 30px -14px color-mix(in srgb, var(--apple) 60%, transparent); }
 
+/* ---------- Breaking-news alarm ---------- */
+/* Safety: the glow pulses ~2.2x/s and the beams rotate (no strobing), under the
+   3-flashes-per-second limit for photosensitive viewers. */
+.alarm { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; opacity: 0; transition: opacity .35s; }
+.alarm.is-on { opacity: 1; }
+.alarm-glow {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(255, 0, 0, .55) 100%);
+  box-shadow: inset 0 0 120px 30px rgba(255, 0, 0, .65);
+  animation: alarm-pulse .45s ease-in-out infinite alternate;
+}
+@keyframes alarm-pulse { from { opacity: .35; } to { opacity: 1; } }
+.alarm-beam {
+  position: absolute; width: 220vmax; height: 220vmax; margin: -110vmax 0 0 -110vmax; mix-blend-mode: screen;
+  background: conic-gradient(from 0deg, transparent 0 8%, rgba(255, 30, 30, .75) 11%, rgba(255, 120, 90, .55) 13%, transparent 17% 50%,
+                                         rgba(255, 30, 30, .75) 61%, rgba(255, 120, 90, .55) 63%, transparent 67% 100%);
+  animation: alarm-spin 1.6s linear infinite;
+}
+.alarm-beam.b1 { left: 0; top: 0; }
+.alarm-beam.b2 { left: 100%; top: 0; animation-direction: reverse; animation-duration: 1.3s; }
+.alarm-beam.b3 { left: 0; top: 100%; animation-duration: 1.9s; animation-direction: reverse; }
+.alarm-beam.b4 { left: 100%; top: 100%; animation-duration: 1.45s; }
+@keyframes alarm-spin { to { transform: rotate(360deg); } }
+.alarm-tape {
+  position: absolute; left: -10%; right: -10%; height: 34px;
+  background: repeating-linear-gradient(-45deg, #d42a2a 0 26px, #0b0806 26px 52px);
+  box-shadow: 0 0 30px rgba(255, 0, 0, .8); animation: alarm-tape 1s linear infinite;
+}
+.alarm-tape.top { top: 0; }
+.alarm-tape.bottom { bottom: 0; animation-direction: reverse; }
+@keyframes alarm-tape { to { background-position: 74px 0; } }
+.alarm-banner {
+  position: absolute; left: 50%; top: 50%; width: min(92vw, 640px); transform: translate(-50%, -50%);
+  pointer-events: auto; text-align: center; padding: 26px 24px 18px; border-radius: 24px;
+  background: rgba(11, 8, 6, .88); border: 2px solid #ff2a2a;
+  box-shadow: 0 0 0 6px rgba(255, 0, 0, .25), 0 0 80px rgba(255, 0, 0, .7);
+  animation: alarm-shake .5s ease-in-out infinite;
+}
+@keyframes alarm-shake { 0%, 100% { transform: translate(-50%, -50%) rotate(-1deg); } 50% { transform: translate(-50%, -50%) rotate(1deg); } }
+.alarm-kicker { margin: 0 0 8px; font-family: var(--display); font-size: clamp(22px, 6vw, 32px); letter-spacing: .12em; color: var(--cream); }
+.alarm-title {
+  margin: 0 0 18px; font-family: var(--cover-font); font-weight: 900; font-stretch: 68%; text-transform: uppercase;
+  font-size: clamp(38px, 11vw, 76px); line-height: .92; color: #ff2a2a; text-shadow: 0 0 24px rgba(255, 0, 0, .8);
+}
+.alarm-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.alarm-mute { padding: 0 18px; min-height: 54px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-weight: 600; }
+.alarm-count { margin: 12px 0 0; font-size: 12px; letter-spacing: .2em; color: var(--muted); }
+.alarm.is-still .alarm-beam, .alarm.is-still .alarm-tape { display: none; }
+.alarm.is-still .alarm-glow, .alarm.is-still .alarm-banner { animation: none; }
+
 /* ---------- Toast ---------- */
 .toast {
   position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 100;

@@ -60,11 +60,11 @@
     const catOf = name => CATS.find(c => c.name.toLowerCase() === String(name || "").toLowerCase()) || { name: name || "News", key: "news" };
     const today = new Date().toISOString().slice(0, 10);
     const fmtDate = d => {
-      const [y, m, day] = (d || "").split("-").map(Number);
+      const [y, m, day] = String(d || "").slice(0, 10).split("-").map(Number);
       return y ? new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "";
     };
     const shortDate = d => {
-      const [y, m, day] = (d || "").split("-").map(Number);
+      const [y, m, day] = String(d || "").slice(0, 10).split("-").map(Number);
       return y ? new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
     };
     const safeUrl = u => /^(https?:\/\/|assets\/|\.\/|\/)/i.test(u || "") ? u : "";
@@ -119,15 +119,18 @@
       if (window.gsap && !reduced) gsap.from(".paper-grid > .story, .paper-empty", { y: 14, opacity: 0, duration: .5, ease: "expo.out", stagger: .05, clearProps: "transform,opacity" });
     });
 
+    function load(data) {
+      posts = (data.posts || [])
+        .filter(p => p && p.title && !p.hidden && !(p.hideAfter && p.hideAfter < today))   // gone after its end date
+        .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || String(b.date).localeCompare(String(a.date)));
+      render();
+    }
     fetch("content/news.json", { cache: "no-cache" })
       .then(r => r.ok ? r.json() : { posts: [] })
       .catch(() => ({ posts: [] }))
-      .then(data => {
-        posts = (data.posts || [])
-          .filter(p => p && p.title && !p.hidden && !(p.hideAfter && p.hideAfter < today))   // gone after its end date
-          .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || String(b.date).localeCompare(String(a.date)));
-        render();
-      });
+      .then(load);
+    // js/alarm.js checks for new posts while the site is open and hands them over here.
+    document.addEventListener("oc:news", e => load(e.detail));
   })();
 
   /* ---------- Ask Oscar: contact form ---------- */
