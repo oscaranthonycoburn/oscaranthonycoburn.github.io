@@ -63,12 +63,12 @@ window.SITE = {
   ],
 
   // "Ask Oscar" contact form. The address is split so it never appears whole in the page
-  // (keeps it away from spam bots). Paste the free Web3Forms access key here to have the
-  // form send messages straight to Oscar's inbox; until then it opens the visitor's email app.
+  // (keeps it away from spam bots). The Web3Forms key below sends messages straight to
+  // Oscar's inbox; if it's ever removed, the form opens the visitor's email app instead.
   contact: {
     user: "ocoburn29",
     domain: "brophybroncos.org",
-    web3formsKey: "",
+    web3formsKey: "81368677-1fc7-4971-af92-52e3f4483a38",   // Web3Forms access key (public by design; delivers to Oscar)
     topics: ["General question", "The music", "Shows & booking", "Collaboration", "Press"]
   },
 
