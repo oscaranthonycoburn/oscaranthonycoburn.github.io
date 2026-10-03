@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>I Ain't Perfect · Oscar A. Coburn</title>
+  <meta name="description" content="I Ain't Perfect, the debut EP from Oscar A. Coburn. Five songs, out now.">
+  <meta name="theme-color" content="#0b0806">
+
+  <!-- Social previews: og:url / og:image must be absolute public URLs. -->
+  <meta property="og:type" content="music.album">
+  <meta property="og:site_name" content="Oscar A. Coburn">
+  <meta property="og:title" content="I Ain't Perfect · Oscar A. Coburn">
+  <meta property="og:description" content="The debut EP from Oscar A. Coburn. Five songs, out now.">
+  <meta property="og:url" content="https://triddell29-lgtm.github.io/oscar-coburn-site/">
+  <meta property="og:image" content="https://triddell29-lgtm.github.io/oscar-coburn-site/assets/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="I Ain't Perfect EP cover by Oscar A. Coburn">
+  <meta property="music:release_date" content="2026-10-02">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="I Ain't Perfect · Oscar A. Coburn">
+  <meta name="twitter:description" content="The debut EP. Five songs, out now.">
+  <meta name="twitter:image" content="https://triddell29-lgtm.github.io/oscar-coburn-site/assets/og-image.jpg">
+  <meta name="twitter:image:alt" content="I Ain't Perfect EP cover by Oscar A. Coburn">
+
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,900&family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#tracks">Skip to tracklist</a>
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="nav">
+    <a href="#top" class="nav-logo" data-scroll>Oscar A. Coburn</a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#tracks" data-scroll>Tracks</a>
+      <a href="#spin" data-scroll>Listen</a>
+      <a href="#about" data-scroll>About</a>
+      <a href="#follow" data-scroll>Follow</a>
+    </nav>
+    <button class="icon-btn" data-share aria-label="Share this EP">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+    </button>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="cover-wrap">
+        <div class="cover-glow" aria-hidden="true"><img data-src="cover" alt=""></div>
+        <div class="cover-ghost" aria-hidden="true"><img data-src="cover" alt=""></div>
+        <figure class="cover">
+          <img data-src="cover" alt="I Ain't Perfect EP cover: a motion-blurred, warm-toned film photo" width="1215" height="1286">
+          <span class="img-missing">Add assets/cover.jpg</span>
+          <div class="streaks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        </figure>
+      </div>
+
+      <div class="hero-copy">
+        <p class="eyebrow">The EP · Out Now</p>
+        <h1 class="hero-title" data-split>I Ain't Perfect</h1>
+        <p class="hero-artist">Oscar A. Coburn</p>
+        <p class="hero-meta">5 songs · 16:12 · Released October 2, 2026</p>
+        <div class="hero-ctas">
+          <a href="#tracks" class="btn btn-red" data-scroll>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            Listen Now
+          </a>
+          <button class="btn btn-ghost" data-share>Share this EP</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRACKLIST -->
+    <section id="tracks" class="section">
+      <div class="section-head" data-fade>
+        <p class="kicker">Tracklist · <span data-text="runtime"></span></p>
+        <h2 class="section-title">Five Songs</h2>
+      </div>
+      <div class="player" id="player" hidden>
+        <div class="player-panel">
+          <div class="player-top">
+            <div>
+              <p class="kicker" id="playerNum"></p>
+              <h3 id="playerTitle"></h3>
+            </div>
+            <button class="icon-btn" data-close aria-label="Close player">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+          <div class="player-video" id="playerVideo"></div>
+          <div class="player-nav">
+            <button class="btn btn-ghost btn-sm" data-prev>← Prev</button>
+            <button class="btn btn-ghost btn-sm" data-next>Next →</button>
+          </div>
+        </div>
+      </div>
+      <ol class="track-list" id="trackList"></ol>
+    </section>
+
+    <!-- RECORD DECK -->
+    <section id="spin" class="section" aria-label="Record player">
+      <div class="deck" id="deck" data-fade>
+        <div class="deck-stage">
+          <div class="deck-rig">
+            <div class="vinyl" id="vinyl" role="slider" tabindex="0"
+                 aria-label="Record. Drag to spin to another song, or use the arrow keys. Press Enter to play or pause."
+                 aria-valuemin="1" aria-valuemax="5" aria-valuenow="1">
+              <div class="vinyl-disc" id="vinylDisc">
+                <div class="vinyl-label"><img data-src="cover" alt="" draggable="false"></div>
+              </div>
+              <div class="vinyl-sheen" aria-hidden="true"></div>
+            </div>
+            <div class="sleeve"><img data-src="cover" draggable="false" alt="I Ain't Perfect record sleeve" width="1215" height="1286" loading="lazy"></div>
+          </div>
+          <p class="deck-hint"><span aria-hidden="true">↻</span> Drag the record to switch songs · tap to play or pause</p>
+        </div>
+
+        <div class="now">
+          <p class="kicker" id="nowState">Spin to play</p>
+          <h3 class="now-title" id="nowTitle" aria-live="polite"></h3>
+          <p class="now-meta" id="nowMeta"></p>
+          <div class="now-video">
+            <div id="deckPlayer"></div>
+            <div class="now-empty">Give the record a spin</div>
+          </div>
+          <div class="now-controls">
+            <button class="icon-btn" data-deck-prev aria-label="Previous song">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5 9 12l10 7zM6 5v14"/></svg>
+            </button>
+            <button class="btn btn-red btn-sm now-toggle" data-deck-toggle>
+              <svg viewBox="0 0 24 24" aria-hidden="true" class="i-play"><path d="M8 5v14l11-7z"/></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true" class="i-pause"><path d="M7 5h4v14H7zm6 0h4v14h-4z"/></svg>
+              <span>Play</span>
+            </button>
+            <button class="icon-btn" data-deck-next aria-label="Next song">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 10 7-10 7zM18 5v14"/></svg>
+            </button>
+          </div>
+          <ol class="now-list" id="nowList"></ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEET OSCAR -->
+    <section id="about" class="section artist">
+      <div class="section-head" data-fade>
+        <p class="kicker">The Artist</p>
+        <h2 class="section-title">Meet Oscar</h2>
+      </div>
+      <div class="artist-grid">
+        <div class="artist-lead" data-fade>
+          <ul class="roles" id="roles" aria-label="Roles"></ul>
+          <blockquote class="bio-quote">“<span data-text="bioQuote"></span>”<cite>Oscar A. Coburn</cite></blockquote>
+        </div>
+        <div class="artist-body" data-fade>
+          <div class="bio" id="bio"></div>
+          <dl class="facts">
+            <div><dt>Debut EP</dt><dd><em>I Ain't Perfect</em></dd></div>
+            <div><dt>Released</dt><dd>October 2, 2026</dd></div>
+            <div><dt>Songs</dt><dd>5 · 16:12</dd></div>
+            <div><dt>Instagram</dt><dd><a data-link="instagram" target="_blank" rel="noopener">@oscar_c0burn</a></dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOLLOW -->
+    <section id="follow" class="section follow">
+      <div class="section-head" data-fade>
+        <p class="kicker">Follow</p>
+        <h2 class="section-title">Stay Tuned</h2>
+      </div>
+      <div class="follow-grid">
+        <a class="follow-btn" data-link="youtube" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8zM9.75 15.02V8.98L15.5 12z"/></svg>
+          <span><strong>Subscribe on YouTube</strong><small>@OscarAnthonyCoburn</small></span>
+          <i aria-hidden="true">↗</i>
+        </a>
+        <a class="follow-btn" data-link="tiktok" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.6 6.7a4.8 4.8 0 0 1-3.8-4.2V2h-3.4v13.4a2.9 2.9 0 1 1-2-2.7V9.2a6.3 6.3 0 1 0 5.4 6.2V8.6a8.2 8.2 0 0 0 4.8 1.5V6.8z"/></svg>
+          <span><strong>Follow on TikTok</strong><small>@oscaranthonycoburn</small></span>
+          <i aria-hidden="true">↗</i>
+        </a>
+        <a class="follow-btn" data-link="instagram" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.8.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 3.2-1.7 4.8-4.9 4.9-1.3.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-3.3-.1-4.8-1.7-4.9-4.9C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8C2.4 3.9 3.9 2.4 7.2 2.3c1.2-.1 1.6-.1 4.8-.1zM12 0C8.7 0 8.3 0 7.1.1 2.7.3.3 2.7.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9c.2 4.4 2.6 6.8 7 7 1.2.1 1.6.1 4.9.1s3.7 0 4.9-.1c4.4-.2 6.8-2.6 7-7 .1-1.2.1-1.6.1-4.9s0-3.7-.1-4.9c-.2-4.4-2.6-6.8-7-7C15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 1 0 0 12.4 6.2 6.2 0 0 0 0-12.4zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.8a1.4 1.4 0 1 0 0 2.9 1.4 1.4 0 0 0 0-2.9z"/></svg>
+          <span><strong>Follow on Instagram</strong><small>@oscar_c0burn</small></span>
+          <i aria-hidden="true">↗</i>
+        </a>
+        <a class="follow-btn" data-link="playlist" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h13v2H3zm0 5h13v2H3zm0 5h9v2H3zm15-2.5V6h4v2h-2v8.5a2.5 2.5 0 1 1-2-2.45z"/></svg>
+          <span><strong>Full EP Playlist</strong><small>All 5 songs on YouTube</small></span>
+          <i aria-hidden="true">↗</i>
+        </a>
+      </div>
+      <button class="btn btn-ghost share-wide" data-share>
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="stroke"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+        Share this EP
+      </button>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2026 Oscar A. Coburn</p>
+    <p>All music by Oscar A. Coburn.</p>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/shader.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/deck.js"></script>
+</body>
+</html>
