@@ -49,6 +49,7 @@
       <a href="#tracks" data-scroll>Tracks</a>
       <a href="#spin" data-scroll>Listen</a>
       <a href="#about" data-scroll>About</a>
+      <a href="#contact" data-scroll>Contact</a>
       <a href="#follow" data-scroll>Follow</a>
     </nav>
     <button class="icon-btn" data-share aria-label="Share this EP">
@@ -166,6 +167,32 @@
             <div><dt>Instagram</dt><dd><a data-link="instagram" target="_blank" rel="noopener">@oscar_c0burn</a></dd></div>
           </dl>
         </div>
+      </div>
+    </section>
+
+    <!-- ASK OSCAR -->
+    <section id="contact" class="section contact">
+      <div class="section-head" data-fade>
+        <p class="kicker">Contact</p>
+        <h2 class="section-title">Ask Oscar</h2>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-intro" data-fade>
+          <p class="contact-lead">Questions about the music, shows, collabs, or just something you want to say? Send it here and it goes straight to Oscar.</p>
+          <p class="contact-alt">Prefer your own email app? <a id="contactMail">Email Oscar directly</a></p>
+        </div>
+        <form class="contact-form" id="contactForm" novalidate data-fade>
+          <div class="field-row">
+            <label class="field"><span>Name</span><input name="name" type="text" autocomplete="name" required maxlength="80"></label>
+            <label class="field"><span>Your email</span><input name="email" type="email" autocomplete="email" required maxlength="120"></label>
+          </div>
+          <label class="field"><span>Topic</span><select name="topic" id="contactTopic"></select></label>
+          <label class="field"><span>Message</span><textarea name="message" rows="5" required maxlength="4000"></textarea></label>
+          <!-- spam trap: real people never see or fill this -->
+          <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button class="btn btn-red contact-send" type="submit">Send message</button>
+          <p class="contact-status" id="contactStatus" role="status" aria-live="polite"></p>
+        </form>
       </div>
     </section>
 

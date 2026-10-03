@@ -486,6 +486,41 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .paper-empty { padding: 32px 0; text-align: center; color: var(--muted); }
 .paper-empty p { margin: 0; }
 
+/* ---------- Ask Oscar (contact) ---------- */
+.contact-grid { display: grid; gap: var(--space-block); }
+.contact-lead { margin: 0; font-size: clamp(19px, 5vw, 24px); line-height: 1.45; color: var(--cream); }
+.contact-alt { margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+.contact-alt a { color: var(--amber); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.contact-form {
+  display: grid; gap: var(--space-tight); padding: 20px; border-radius: var(--radius);
+  background: linear-gradient(140deg, var(--glass-hi), var(--glass) 60%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid var(--line);
+}
+.field-row { display: grid; gap: var(--space-tight); }
+.field { display: grid; gap: 6px; }
+.field span { font-size: 11px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--amber); }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 55%, transparent); color: var(--cream);
+  font: inherit; font-size: 16px; transition: border-color .25s, box-shadow .25s;
+}
+.field textarea { resize: vertical; min-height: 130px; }
+.field select { appearance: none; -webkit-appearance: none; padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23e0a35c' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 16px; }
+.field select option { background: var(--bg); color: var(--cream); }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: color-mix(in srgb, var(--orange) 80%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 30%, transparent);
+}
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.contact-send { width: 100%; margin-top: 4px; }
+.contact-send:disabled { opacity: .6; cursor: wait; }
+.contact-status { margin: 0; min-height: 1.4em; font-size: 14px; color: var(--muted); }
+.contact-status[data-kind="ok"] { color: var(--amber); }
+.contact-status[data-kind="error"] { color: #ff8a7a; }
+
 /* ---------- Follow ---------- */
 .follow-grid { display: grid; gap: var(--space-tight); }
 .follow-btn {
@@ -586,6 +621,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .track-num { font-size: 48px; }
   .track-title { font-size: 36px; }
   .follow-grid { grid-template-columns: repeat(2, 1fr); }
+  .field-row { grid-template-columns: 1fr 1fr; }
+  .contact-form { padding: 26px; }
   .follow-grid > :last-child:nth-child(odd) { grid-column: 1 / -1; }
   .library-grid { grid-template-columns: repeat(3, 1fr); gap: 32px 20px; }
   .paper { padding: 0 32px 10px; }
@@ -612,6 +649,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .follow-grid > :last-child:nth-child(odd) { grid-column: auto; }
   .deck { grid-template-columns: 1.15fr 1fr; gap: 40px; }
   .artist-grid { grid-template-columns: 1fr 1.1fr; gap: 40px; align-items: start; }
+  .contact-grid { grid-template-columns: 1fr 1.25fr; gap: 40px; align-items: start; }
 }
 
 /* ---------- Reduced motion ---------- */

@@ -130,6 +130,60 @@
       });
   })();
 
+  /* ---------- Ask Oscar: contact form ---------- */
+  (function contact() {
+    const form = $("#contactForm");
+    const C = S.contact;
+    if (!form || !C) return;
+    const address = () => C.user + "@" + C.domain;   // assembled only when needed
+    const status = $("#contactStatus");
+    const send = $(".contact-send", form);
+    $("#contactTopic").innerHTML = C.topics.map(t => `<option>${esc(t)}</option>`).join("");
+
+    const mailto = (subject, body) =>
+      `mailto:${address()}?subject=${encodeURIComponent(subject)}${body ? `&body=${encodeURIComponent(body)}` : ""}`;
+    const direct = $("#contactMail");
+    direct.href = "#";
+    direct.addEventListener("click", e => { e.preventDefault(); location.href = mailto("Question from the website"); });
+
+    function say(msg, kind) { status.textContent = msg; status.dataset.kind = kind || ""; }
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const f = Object.fromEntries(new FormData(form));
+      if (f.botcheck) return;                                       // a bot filled the hidden box
+      if (!f.name.trim() || !f.message.trim()) return say("Please add your name and a message.", "error");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) return say("Please enter a valid email so Oscar can reply.", "error");
+      const subject = `${f.topic}: message from ${f.name.trim()} (website)`;
+
+      if (!C.web3formsKey) {
+        // No form service set up yet: open the visitor's email app with everything filled in.
+        location.href = mailto(subject, `${f.message.trim()}\n\n— ${f.name.trim()} (${f.email})`);
+        return say("Your email app should open with your message ready. Just hit send.", "ok");
+      }
+      send.disabled = true;
+      say("Sending…");
+      try {
+        const res = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: C.web3formsKey, subject, from_name: "Oscar A. Coburn website",
+            name: f.name.trim(), email: f.email.trim(), topic: f.topic, message: f.message.trim(), botcheck: ""
+          })
+        });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || out.success === false) throw new Error(out.message || "failed");
+        form.reset();
+        say("Sent! Oscar will get back to you at the email you gave.", "ok");
+      } catch (_) {
+        say("That didn't go through. Try again, or use “Email Oscar directly” above.", "error");
+      } finally {
+        send.disabled = false;
+      }
+    });
+  })();
+
   /* ---------- "Listen on" chooser: clicking an album lets you pick Spotify or Apple Music ---------- */
   const listen = $("#listen");
   function openListen(i) {

@@ -62,6 +62,16 @@ window.SITE = {
     { title: "I Ain't Perfect", length: "3:24", id: "Z86v2BupQ64", titleTrack: true }
   ],
 
+  // "Ask Oscar" contact form. The address is split so it never appears whole in the page
+  // (keeps it away from spam bots). Paste the free Web3Forms access key here to have the
+  // form send messages straight to Oscar's inbox; until then it opens the visitor's email app.
+  contact: {
+    user: "ocoburn29",
+    domain: "brophybroncos.org",
+    web3formsKey: "",
+    topics: ["General question", "The music", "Shows & booking", "Collaboration", "Press"]
+  },
+
   // "Meet Oscar" section
   roles: ["Musician", "Singer", "Songwriter", "Guitar player"],
   bio: [

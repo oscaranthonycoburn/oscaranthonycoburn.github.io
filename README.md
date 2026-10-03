@@ -35,6 +35,12 @@ The News tab (`#news`) is laid out like a newspaper front page: a dateline, sect
 
 Either way the live site updates about a minute after saving.
 
+## Ask Oscar (contact form)
+The "Ask Oscar" section on Home (`#contact`) lets anyone send Oscar a message. His address is stored split up in `contact` in `js/data.js`, so it never appears whole in the page (keeps spam bots away).
+- **With a Web3Forms key** (free, https://web3forms.com): messages are emailed straight to Oscar, with the visitor's address as reply-to, so he just hits Reply. Paste the key into `contact.web3formsKey`.
+- **Without a key:** the form opens the visitor's own email app with the message filled in.
+- Edit the topic list in `contact.topics`.
+
 ## Deploy
 Hosted free on GitHub Pages from the `oscaranthonycoburn/oscaranthonycoburn.github.io` repo (branch `main`, root), live at https://oscaranthonycoburn.github.io/. Pushing to `main` republishes in about a minute.
 
