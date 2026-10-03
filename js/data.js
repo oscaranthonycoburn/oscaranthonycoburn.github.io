@@ -66,8 +66,8 @@ window.SITE = {
   // (keeps it away from spam bots). The Web3Forms key below sends messages straight to
   // Oscar's inbox; if it's ever removed, the form opens the visitor's email app instead.
   contact: {
-    user: "ocoburn29",
-    domain: "brophybroncos.org",
+    user: "oscarmusic1398",
+    domain: "gmail.com",
     web3formsKey: "81368677-1fc7-4971-af92-52e3f4483a38",   // Web3Forms access key (public by design; delivers to Oscar)
     topics: ["General question", "The music", "Shows & booking", "Collaboration", "Press"]
   },
