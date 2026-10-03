@@ -3,21 +3,19 @@
     {
       "title": "I Ain't Perfect is out now",
       "category": "Releases",
-      "date": "2026-10-02",
+      "date": "2026-10-03T16:27",
       "body": "LISTEN TO I AIN'T PERFECT RIGHT NOW!!!! More songs are in the works :)\n",
       "link": "https://open.spotify.com/album/3oG4AVbBcS29V9o9uxxFZU",
       "linkLabel": "Listen on Spotify",
-      "pinned": true,
-      "hideAfter": "2026-10-03"
+      "pinned": true
     },
     {
       "title": "YOU HAVE TO READ THIS!!",
       "category": "Announcements",
-      "date": "2026-10-03",
+      "date": "2026-10-03T16:27",
       "body": "I just posted something on tik tok :) and other platforms cus im cool.",
       "image": "/assets/news/IMG_3490.jpg",
-      "pinned": false,
-      "hideAfter": "2026-10-03"
+      "pinned": false
     }
   ]
 }
