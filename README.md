@@ -14,12 +14,15 @@ If you get a higher-resolution cover, replace `cover.jpg` and update the `aspect
 
 All content (tracks, links, colors, bio) lives in `js/data.js`.
 
-## Pages
-- `index.html`: Home (the EP page).
-- `library.html`: Library, a grid of releases. To add an album, copy the entry in `library` in `js/data.js`, change it, and put its cover in `assets/`. Empty "+" slots fill the rest (at least `librarySlots`, rounded up to a full row of 3).
-- `links.spotify` in `js/data.js` is used by the library album, the hero cover, the hero Spotify button and the Follow card. It's currently a Spotify search; replace it with the exact album link.
+## Music
+The site plays the EP as background music (`js/audio.js`). It tries to start on page load and otherwise starts at the visitor's first tap or click (browsers block sound before that). The record deck, tracklist and the now-playing bar all control it, and it plays through the EP and loops.
 
-`js/deck.js` runs the record in the About section. Dragging it about 72° moves one song (5 songs = one full turn). It plays through the YouTube IFrame API, and only one player (deck or tracklist) plays at a time.
+Song files go in `assets/audio/` with the names set in `tracks[].audio` in `js/data.js` (MP3 or M4A).
+
+## Pages
+Home and Library are both in `index.html`, so switching between them never stops the music. `#library` opens the Library; `library.html` just redirects there for old links.
+- To add an album, copy the entry in `library` in `js/data.js`, change it, and put its cover in `assets/`. Empty "+" slots fill the rest (at least `librarySlots`, rounded up to a full row of 3).
+- `links.spotify` in `js/data.js` is used by the library album, the hero cover, the hero Spotify button and the Follow card. It's currently a Spotify search; replace it with the exact album link.
 
 ## Deploy
 Hosted free on GitHub Pages from the `oscaranthonycoburn/oscaranthonycoburn.github.io` repo (branch `main`, root), live at https://oscaranthonycoburn.github.io/. Pushing to `main` republishes in about a minute.

@@ -33,15 +33,15 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <a class="skip" href="#tracks">Skip to tracklist</a>
+  <a class="skip" href="#tracks" data-scroll>Skip to tracklist</a>
   <canvas id="bg" aria-hidden="true"></canvas>
   <div class="grain" aria-hidden="true"></div>
 
   <header class="nav">
-    <a href="#top" class="nav-logo" data-scroll>Oscar A. Coburn</a>
+    <a href="#home" class="nav-logo" data-go="home">Oscar A. Coburn</a>
     <nav class="nav-pages" aria-label="Pages">
-      <a href="./" aria-current="page">Home</a>
-      <a href="library.html">Library</a>
+      <a href="#home" data-go="home" aria-current="page">Home</a>
+      <a href="#library" data-go="library">Library</a>
     </nav>
     <nav class="nav-links" aria-label="Sections">
       <a href="#tracks" data-scroll>Tracks</a>
@@ -54,7 +54,7 @@
     </button>
   </header>
 
-  <main id="top">
+  <main id="top" data-view="home">
     <!-- HERO -->
     <section class="hero">
       <div class="cover-wrap">
@@ -76,7 +76,7 @@
         <p class="hero-artist">Oscar A. Coburn</p>
         <p class="hero-meta">5 songs · 16:12 · Released October 2, 2026</p>
         <div class="hero-ctas">
-          <a href="#tracks" class="btn btn-red" data-scroll>
+          <a href="#spin" class="btn btn-red" data-scroll data-listen>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
             Listen Now
           </a>
@@ -91,26 +91,6 @@
       <div class="section-head" data-fade>
         <p class="kicker">Tracklist · <span data-text="runtime"></span></p>
         <h2 class="section-title">Five Songs</h2>
-      </div>
-      <div class="player" id="player" hidden>
-        <div class="player-panel">
-          <div class="player-top">
-            <div>
-              <p class="kicker" id="playerNum"></p>
-              <h3 id="playerTitle"></h3>
-            </div>
-            <button class="icon-btn" data-close aria-label="Close player">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-            </button>
-          </div>
-          <div class="player-video">
-            <div class="player-frame" id="playerVideo"></div>
-          </div>
-          <div class="player-nav">
-            <button class="btn btn-ghost btn-sm" data-prev>← Prev</button>
-            <button class="btn btn-ghost btn-sm" data-next>Next →</button>
-          </div>
-        </div>
       </div>
       <ol class="track-list" id="trackList"></ol>
     </section>
@@ -137,9 +117,10 @@
           <p class="kicker" id="nowState">Spin to play</p>
           <h3 class="now-title" id="nowTitle" aria-live="polite"></h3>
           <p class="now-meta" id="nowMeta"></p>
-          <div class="now-video">
-            <div id="deckPlayer"></div>
-            <div class="now-empty">Give the record a spin</div>
+          <div class="now-progress">
+            <span class="now-time" id="nowTime">0:00</span>
+            <input class="range" type="range" id="nowSeek" min="0" max="1000" value="0" step="1" aria-label="Song position">
+            <span class="now-time" id="nowDur">0:00</span>
           </div>
           <div class="now-controls">
             <button class="icon-btn" data-deck-prev aria-label="Previous song">
@@ -154,7 +135,12 @@
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 10 7-10 7zM18 5v14"/></svg>
             </button>
           </div>
+          <div class="now-volume">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>
+            <input class="range" type="range" id="nowVol" min="0" max="100" value="100" aria-label="Volume">
+          </div>
           <ol class="now-list" id="nowList"></ol>
+          <a class="now-watch" id="nowWatch" target="_blank" rel="noopener">Watch the video on YouTube ↗</a>
         </div>
       </div>
     </section>
@@ -222,10 +208,38 @@
     </section>
   </main>
 
+  <main id="library" data-view="library" hidden>
+    <section class="section library">
+      <div class="section-head library-head">
+        <p class="kicker">Discography</p>
+        <h1 class="section-title">Library</h1>
+        <p class="library-intro">Every release from Oscar A. Coburn. Tap an album to listen on Spotify.</p>
+      </div>
+      <ol class="library-grid" id="libraryGrid"></ol>
+    </section>
+  </main>
+
   <footer class="footer">
     <p>© 2026 Oscar A. Coburn</p>
     <p>All music by Oscar A. Coburn.</p>
   </footer>
+
+  <!-- Now-playing bar: follows you around the site once music has started -->
+  <div class="mini" id="mini" hidden>
+    <img class="mini-art" data-src="cover" alt="">
+    <button class="mini-meta" data-mini-open aria-label="Open the record player">
+      <span class="mini-title" id="miniTitle"></span>
+      <span class="mini-sub">Oscar A. Coburn · I Ain't Perfect</span>
+    </button>
+    <button class="icon-btn mini-btn" data-mini-toggle aria-label="Pause">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="i-play"><path d="M8 5v14l11-7z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="i-pause"><path d="M7 5h4v14H7zm6 0h4v14h-4z"/></svg>
+    </button>
+    <button class="icon-btn mini-btn" data-mini-next aria-label="Next song">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 10 7-10 7zM18 5v14"/></svg>
+    </button>
+    <span class="mini-progress" aria-hidden="true"><i id="miniProgress"></i></span>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -234,7 +248,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-  <script src="js/yt.js"></script>
+  <script src="js/audio.js"></script>
   <script src="js/main.js"></script>
   <script src="js/deck.js"></script>
 </body>

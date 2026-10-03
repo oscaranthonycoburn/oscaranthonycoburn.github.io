@@ -39,12 +39,14 @@ window.SITE = {
   ],
   librarySlots: 6,
 
+  // `audio` = the song file the site plays in the background (put files in assets/audio/).
+  // `id` = the YouTube video, used for the "Watch on YouTube" link.
   tracks: [
-    { title: "Subhuman Nature", length: "4:57", id: "himYSGRDR0Q" },
-    { title: "Dreams", length: "2:41", id: "V9bUHai0z0o" },
-    { title: "Time", length: "3:28", id: "cyxLA8L8PJk" },
-    { title: "Everything I Do", length: "1:42", id: "pvbWNwAZExY" },
-    { title: "I Ain't Perfect", length: "3:24", id: "Z86v2BupQ64", titleTrack: true }
+    { title: "Subhuman Nature", length: "4:57", audio: "assets/audio/01-subhuman-nature.mp3", id: "himYSGRDR0Q" },
+    { title: "Dreams",          length: "2:41", audio: "assets/audio/02-dreams.mp3",          id: "V9bUHai0z0o" },
+    { title: "Time",            length: "3:28", audio: "assets/audio/03-time.mp3",            id: "cyxLA8L8PJk" },
+    { title: "Everything I Do", length: "1:42", audio: "assets/audio/04-everything-i-do.mp3", id: "pvbWNwAZExY" },
+    { title: "I Ain't Perfect", length: "3:24", audio: "assets/audio/05-i-aint-perfect.mp3",  id: "Z86v2BupQ64", titleTrack: true }
   ],
 
   // "Meet Oscar" section

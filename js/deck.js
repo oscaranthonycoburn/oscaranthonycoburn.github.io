@@ -1,12 +1,13 @@
-/* Record deck: an album sleeve with the vinyl halfway out.
-   Drag (or flick) the record to spin to another song; tap it to play/pause.
-   Every ~72° of spin moves one track. Playback uses the YouTube IFrame API. */
+/* Record deck: an album sleeve with the vinyl halfway out. It's the controller for the
+   site's background music (js/audio.js): the record spins while music plays, dragging
+   it changes the song (~72° per song), and tapping it plays/pauses. */
 (function () {
   const S = window.SITE;
+  const A = window.OCAudio;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const deck = $("#deck");
-  if (!deck) return;
+  if (!deck || !A) return;
 
   const vinyl = $("#vinyl"), disc = $("#vinylDisc");
   const tracks = S.tracks, N = tracks.length;
@@ -14,15 +15,14 @@
   const pad = n => String(n).padStart(2, "0");
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const wrap = i => ((i % N) + N) % N;
+  const fmt = t => { t = Math.max(0, Math.floor(t || 0)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; };
 
   const STEP = 360 / N;      // degrees of spin per song
   const MIN_SPIN = 25;       // anything smaller than this is a tap or a wobble
   const RPM_33 = 200;        // ~33⅓ rpm in degrees per second
 
-  let idx = 0, preview = null;
+  let preview = null;
   let rot = 0, speed = 0, dragging = false;
-  let playing = false;
-  let yt = null, ytReady = false;
 
   /* ---------- Now-playing panel ---------- */
   $("#nowList").innerHTML = tracks.map((t, i) => `
@@ -33,141 +33,45 @@
       <span class="l">${esc(t.length)}</span>
     </button></li>`).join("");
 
+  const seekEl = $("#nowSeek"), volEl = $("#nowVol");
+  let seeking = false;
+
   function render() {
-    const i = preview ?? idx, t = tracks[i];
+    const i = preview ?? A.index, t = tracks[i];
     $("#nowTitle").textContent = t.title;
     $("#nowMeta").textContent = `Track ${pad(i + 1)} of ${pad(N)} · ${t.length}`;
     $("#nowState").textContent =
-      preview !== null && preview !== idx ? "Let go to play" :
-      playing ? "Now playing" :
-      ytReady && deck.classList.contains("has-video") ? "Paused" : "Spin to play";
+      preview !== null && preview !== A.index ? "Let go to play" :
+      A.playing ? "Now playing" : A.started ? "Paused" : "Up next";
     $$("#nowList button").forEach(b => {
       const on = +b.dataset.deck === i;
       b.classList.toggle("is-current", on);
       b.toggleAttribute("aria-current", on);
     });
-    deck.classList.toggle("is-playing", playing);
-    $(".now-toggle span").textContent = playing ? "Pause" : "Play";
+    deck.classList.toggle("is-playing", A.playing);
+    $(".now-toggle span").textContent = A.playing ? "Pause" : "Play";
+    $("#nowWatch").href = `https://www.youtube.com/watch?v=${encodeURIComponent(t.id)}`;
     vinyl.setAttribute("aria-valuenow", i + 1);
     vinyl.setAttribute("aria-valuetext", `${t.title}, track ${i + 1} of ${N}`);
+    renderTime();
+  }
+  function renderTime() {
+    const d = A.duration, c = A.currentTime;
+    $("#nowTime").textContent = fmt(c);
+    $("#nowDur").textContent = d ? fmt(d) : tracks[A.index].length;
+    if (!seeking) seekEl.value = d ? Math.round((c / d) * 1000) : 0;
+    seekEl.style.setProperty("--p", (seekEl.value / 10) + "%");
   }
 
-  /* ---------- YouTube player ---------- */
-  // The deck starts playing by itself (muted, as browsers require) when it scrolls into
-  // view. The first time the visitor touches it, the deck switches to normal play with sound.
-  let autoMode = !reduced;
-  let inView = false;
-  let pausedByUs = false, retries = 0;
-  const listPlayerOpen = () => { const p = $("#player"); return p && !p.hidden; };
+  A.on("track", render);
+  A.on("state", render);
+  A.on("time", renderTime);
 
-  function ensurePlayer() {
-    if (ensurePlayer.p) return ensurePlayer.p;
-    return (ensurePlayer.p = OCYT.load().then(() => new Promise(resolve => {
-      yt = OCYT.create("deckPlayer", tracks[idx].id, {
-        onReady: () => { ytReady = true; render(); resolve(); },
-        onStateChange: onState
-      });
-    })));
-  }
-  // The visitor's first tap/click anywhere starts the record with sound (unless they
-  // tapped something that plays music itself), and it keeps going from there.
-  OCYT.onFirstInteraction(e => {
-    const t = e && e.target;
-    if (reduced || listPlayerOpen() || (t && t.closest && t.closest("[data-play], #player, #deck"))) return;
-    autoMode = false;
-    deck.classList.add("has-video");
-    if (ytReady) { if (!playing) OCYT.play(yt); }
-    else ensurePlayer().then(() => { if (!playing && !listPlayerOpen()) OCYT.play(yt); });
-  });
-
-  function onState(e) {
-    const st = e.data;
-    if (st === YT.PlayerState.PLAYING) {
-      playing = true;
-      deck.classList.add("has-video");
-      document.dispatchEvent(new CustomEvent("oc:play", { detail: "deck" }));
-    } else if (st === YT.PlayerState.ENDED) {
-      playing = false;
-      // play the EP straight through
-      if (autoMode) {
-        idx = wrap(idx + 1); render();
-        yt.loadVideoById(tracks[idx].id);
-        OCYT.play(yt, { muted: true });
-      } else select(idx + 1, true);
-      return;
-    } else if (st !== YT.PlayerState.BUFFERING) {
-      playing = false;
-      // Browsers sometimes pause muted auto-play on their own (e.g. while the page is
-      // still settling). If we didn't ask for it and it's on screen, try again.
-      if (st === YT.PlayerState.PAUSED && autoMode && inView && !pausedByUs && retries < 3 &&
-          document.visibilityState === "visible") {
-        retries++;
-        setTimeout(() => { if (autoMode && inView && !playing) OCYT.play(yt, { muted: true }); }, 500);
-      }
-    }
-    if (st === YT.PlayerState.PLAYING) retries = 0;
-    render();
-  }
-  // Clicking inside the YouTube frame moves focus into it: treat that as the visitor taking over.
-  window.addEventListener("blur", () => {
-    setTimeout(() => {
-      if (document.activeElement && document.activeElement.id === "deckPlayer") { autoMode = false; render(); }
-    }, 0);
-  });
-
-  function autoStart() {
-    if (!autoMode || !inView || listPlayerOpen()) return;
-    ensurePlayer().then(() => {
-      if (!autoMode || !inView || playing || listPlayerOpen()) return;
-      deck.classList.add("has-video");
-      pausedByUs = false;
-      OCYT.play(yt, { muted: true });
-    });
-  }
-  if ("IntersectionObserver" in window) {
-    // Load the player a little before the deck is reached so it's ready instantly.
-    ensurePlayer();   // ready before the first tap, so it can start with sound
-    // Auto-play while on screen; pause muted auto-play when scrolled away.
-    new IntersectionObserver(es => {
-      inView = es.some(e => e.isIntersecting);
-      if (inView) autoStart();
-      else if (autoMode && ytReady && playing) { pausedByUs = true; yt.pauseVideo(); }
-    }, { threshold: 0.45 }).observe(deck);
-  } else ensurePlayer();
-
-  function play(i) {
-    autoMode = false;   // a deliberate choice: play with sound
-    deck.classList.add("has-video");
-    const go = () => { yt.loadVideoById(tracks[i].id); OCYT.play(yt); };
-    ytReady ? go() : ensurePlayer().then(go);
-  }
-  function select(i, autoplay) {
-    const next = wrap(i);
-    const changed = next !== idx;
-    idx = next;
-    preview = null;
-    render();
-    if (autoplay && (changed || !playing || autoMode)) play(idx);
-  }
-  function toggle() {
-    if (!ytReady) { play(idx); return; }
-    if (autoMode && playing) {          // first tap on a muted auto-play: turn the sound on
-      autoMode = false;
-      OCYT.soundOn(yt);
-      render();
-      return;
-    }
-    autoMode = false;
-    if (playing) yt.pauseVideo();
-    else if (deck.classList.contains("has-video")) OCYT.play(yt);
-    else play(idx);
-  }
-  // Pause when the tracklist player starts.
-  document.addEventListener("oc:play", e => {
-    if (e.detail === "deck") return;
-    autoMode = false;
-    if (ytReady && playing) yt.pauseVideo();
-  });
+  seekEl.addEventListener("input", () => { seeking = true; seekEl.style.setProperty("--p", (seekEl.value / 10) + "%"); });
+  seekEl.addEventListener("change", () => { A.seek(seekEl.value / 1000); seeking = false; });
+  volEl.value = Math.round(A.volume * 100);
+  volEl.style.setProperty("--p", volEl.value + "%");
+  volEl.addEventListener("input", () => { A.setVolume(volEl.value / 100); volEl.style.setProperty("--p", volEl.value + "%"); });
 
   /* ---------- Spin physics ---------- */
   let last = performance.now();
@@ -175,7 +79,7 @@
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     if (!dragging) {
-      const target = playing && !reduced ? RPM_33 : 0;
+      const target = A.playing && !reduced ? RPM_33 : 0;
       // flicks coast down to the turntable speed; slow ramps feel like a motor
       const k = Math.abs(speed) > Math.abs(target) ? 1.4 : 2.5;
       speed += (target - speed) * Math.min(1, dt * k);
@@ -229,7 +133,7 @@
     if (dist > r.width / 2) { release(); return; }
 
     const steps = stepsFor(total);
-    preview = steps ? wrap(idx + steps) : null;
+    preview = steps ? wrap(A.index + steps) : null;
     if (preview !== lastPreview) {
       lastPreview = preview;
       render();
@@ -248,12 +152,11 @@
     speed = Math.max(-MAX_SPIN, Math.min(MAX_SPIN, vel));   // coast at the drag speed
     const steps = stepsFor(total);
     lastPreview = null;
-    if (steps) {
-      select(idx + steps, true);
-    } else {
-      preview = null;
+    preview = null;
+    if (steps) A.play(A.index + steps);
+    else {
       render();
-      if (Math.abs(total) < 6 && performance.now() - downAt < 400) toggle();
+      if (Math.abs(total) < 6 && performance.now() - downAt < 400) A.toggle();
     }
   }
   const releaseIfMine = e => { if (e.pointerId === pointerId) release(); };
@@ -264,23 +167,23 @@
 
   function nudge(dir) {
     speed += dir * 520;                 // a visible kick in the right direction
-    select(idx + dir, true);
+    dir > 0 ? A.next() : A.prev();
   }
   vinyl.addEventListener("keydown", e => {
     if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); nudge(1); }
     else if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); nudge(-1); }
-    else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+    else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); A.toggle(); }
   });
 
   $("[data-deck-prev]").addEventListener("click", () => nudge(-1));
   $("[data-deck-next]").addEventListener("click", () => nudge(1));
-  $("[data-deck-toggle]").addEventListener("click", toggle);
+  $("[data-deck-toggle]").addEventListener("click", () => A.toggle());
   $("#nowList").addEventListener("click", e => {
     const b = e.target.closest("[data-deck]");
     if (!b) return;
     const i = +b.dataset.deck;
-    speed += Math.sign(i - idx || 1) * 520;
-    select(i, true);
+    speed += Math.sign(i - A.index || 1) * 520;
+    A.play(i);
   });
 
   /* ---------- Entrance: record slides out of the sleeve ---------- */
@@ -288,7 +191,7 @@
     gsap.from(vinyl, {
       xPercent: -48, duration: 1.6, ease: "expo.out",
       scrollTrigger: { trigger: deck, start: "top 75%" },
-      onStart: () => { speed = 700; }
+      onStart: () => { speed = Math.max(speed, 700); }
     });
   }
 
