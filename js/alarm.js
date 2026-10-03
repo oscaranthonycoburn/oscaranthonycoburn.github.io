@@ -162,10 +162,12 @@
     el.className = "alarm" + (reduced ? " is-still" : "");
     el.setAttribute("role", "alert");
     el.innerHTML = `
-      <div class="alarm-glow"></div>
+      <div class="alarm-glow left"></div><div class="alarm-glow right"></div>
+      <div class="alarm-spot s1"></div><div class="alarm-spot s2"></div><div class="alarm-spot s3"></div>
       <div class="alarm-beam b1"></div><div class="alarm-beam b2"></div>
       <div class="alarm-beam b3"></div><div class="alarm-beam b4"></div>
       <div class="alarm-tape top"></div><div class="alarm-tape bottom"></div>
+      <div class="alarm-lightbar">${'<i></i>'.repeat(10)}</div>
       <div class="alarm-banner">
         <p class="alarm-kicker">🚨 Breaking news 🚨</p>
         <p class="alarm-title">${esc(post.title)}</p>

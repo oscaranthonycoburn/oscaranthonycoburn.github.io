@@ -611,28 +611,48 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .listen-apple:hover { border-color: color-mix(in srgb, var(--apple) 60%, transparent); box-shadow: 0 12px 30px -14px color-mix(in srgb, var(--apple) 60%, transparent); }
 
 /* ---------- Breaking-news alarm ---------- */
-/* Safety: the glow pulses ~2.2x/s and the beams rotate (no strobing), under the
-   3-flashes-per-second limit for photosensitive viewers. */
-.alarm { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; opacity: 0; transition: opacity .35s; }
+/* Safety: every flash (glow halves, light bar) switches at most 2x per second and the
+   beams/spotlights move rather than strobe: under the 3-flashes-per-second limit for
+   photosensitive viewers. The brightness comes from color and glow, not flash speed. */
+.alarm { position: fixed; inset: 0; z-index: 9999; pointer-events: none; overflow: hidden; opacity: 0; transition: opacity .3s; }
 .alarm.is-on { opacity: 1; }
-.alarm-glow {
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse at center, transparent 35%, rgba(255, 0, 0, .55) 100%);
-  box-shadow: inset 0 0 120px 30px rgba(255, 0, 0, .65);
-  animation: alarm-pulse .45s ease-in-out infinite alternate;
-}
-@keyframes alarm-pulse { from { opacity: .35; } to { opacity: 1; } }
+
+/* left/right screen glow: red and blue trading places, like a cop car */
+.alarm-glow { position: absolute; top: 0; bottom: 0; width: 75%; mix-blend-mode: screen; animation: alarm-swap 1s steps(1, end) infinite; }
+.alarm-glow.left  { left: 0;  background: radial-gradient(ellipse at 0% 50%, rgba(255, 20, 40, 1), rgba(255, 20, 40, .6) 40%, transparent 80%); box-shadow: inset 40px 0 80px rgba(255, 20, 40, .9); }
+.alarm-glow.right { right: 0; background: radial-gradient(ellipse at 100% 50%, rgba(30, 90, 255, 1), rgba(30, 90, 255, .6) 40%, transparent 80%); box-shadow: inset -40px 0 80px rgba(30, 90, 255, .9); animation-delay: -.5s; }
+@keyframes alarm-swap { 0% { opacity: 1; } 50% { opacity: .15; } }
+
+/* big colored spotlights sweeping around (moving, not flashing) */
+.alarm-spot { position: absolute; width: 95vmax; height: 95vmax; margin: -47.5vmax 0 0 -47.5vmax; border-radius: 50%; mix-blend-mode: screen; filter: blur(18px); opacity: 1; }
+.alarm-spot.s1 { background: radial-gradient(circle, rgba(0, 255, 255, 1) 0, rgba(0, 255, 255, .75) 30%, transparent 65%); animation: alarm-roam1 3.2s ease-in-out infinite alternate; }
+.alarm-spot.s2 { background: radial-gradient(circle, rgba(255, 230, 0, 1) 0, rgba(255, 230, 0, .75) 30%, transparent 65%); animation: alarm-roam2 2.6s ease-in-out infinite alternate; }
+.alarm-spot.s3 { background: radial-gradient(circle, rgba(255, 0, 200, 1) 0, rgba(255, 0, 200, .75) 30%, transparent 65%); animation: alarm-roam3 3.8s ease-in-out infinite alternate; }
+@keyframes alarm-roam1 { from { left: 10%; top: 20%; } to { left: 90%; top: 70%; } }
+@keyframes alarm-roam2 { from { left: 85%; top: 15%; } to { left: 15%; top: 85%; } }
+@keyframes alarm-roam3 { from { left: 50%; top: 95%; } to { left: 55%; top: 5%; } }
+
+/* rotating police-light beams with white-hot centers, in four colors */
 .alarm-beam {
+  --c: 255, 30, 30;
   position: absolute; width: 220vmax; height: 220vmax; margin: -110vmax 0 0 -110vmax; mix-blend-mode: screen;
-  background: conic-gradient(from 0deg, transparent 0 8%, rgba(255, 30, 30, .75) 11%, rgba(255, 120, 90, .55) 13%, transparent 17% 50%,
-                                         rgba(255, 30, 30, .75) 61%, rgba(255, 120, 90, .55) 63%, transparent 67% 100%);
+  background: conic-gradient(from 0deg,
+    transparent 0 5%, rgba(var(--c), 1) 8%, rgba(255, 255, 255, 1) 11.5%, rgba(var(--c), 1) 15%, transparent 19% 48%,
+    rgba(var(--c), 1) 56%, rgba(255, 255, 255, 1) 59.5%, rgba(var(--c), 1) 63%, transparent 67% 100%);
+  filter: brightness(1.25) saturate(1.3);
   animation: alarm-spin 1.6s linear infinite;
 }
-.alarm-beam.b1 { left: 0; top: 0; }
-.alarm-beam.b2 { left: 100%; top: 0; animation-direction: reverse; animation-duration: 1.3s; }
-.alarm-beam.b3 { left: 0; top: 100%; animation-duration: 1.9s; animation-direction: reverse; }
-.alarm-beam.b4 { left: 100%; top: 100%; animation-duration: 1.45s; }
+.alarm-beam.b1 { left: 0; top: 0; --c: 255, 25, 45; }
+.alarm-beam.b2 { left: 100%; top: 0; --c: 40, 110, 255; animation-direction: reverse; animation-duration: 1.3s; }
+.alarm-beam.b3 { left: 0; top: 100%; --c: 255, 170, 0; animation-duration: 1.9s; animation-direction: reverse; }
+.alarm-beam.b4 { left: 100%; top: 100%; --c: 255, 0, 220; animation-duration: 1.45s; }
 @keyframes alarm-spin { to { transform: rotate(360deg); } }
+
+/* police light bar along the top: red and blue segments trading places */
+.alarm-lightbar { position: absolute; left: 50%; top: 34px; transform: translateX(-50%); display: flex; gap: 6px; padding: 6px; border-radius: 0 0 14px 14px; background: rgba(11, 8, 6, .85); }
+.alarm-lightbar i { width: clamp(18px, 6vw, 56px); height: 16px; border-radius: 4px; animation: alarm-swap 1s steps(1, end) infinite; }
+.alarm-lightbar i:nth-child(odd)  { background: #ff1e2d; box-shadow: 0 0 18px 6px rgba(255, 30, 45, .9), 0 0 60px 20px rgba(255, 30, 45, .45); }
+.alarm-lightbar i:nth-child(even) { background: #2d6bff; box-shadow: 0 0 18px 6px rgba(45, 107, 255, .9), 0 0 60px 20px rgba(45, 107, 255, .45); animation-delay: -.5s; }
 .alarm-tape {
   position: absolute; left: -10%; right: -10%; height: 34px;
   background: repeating-linear-gradient(-45deg, #d42a2a 0 26px, #0b0806 26px 52px);
@@ -657,7 +677,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .alarm-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .alarm-mute { padding: 0 18px; min-height: 54px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-weight: 600; }
 .alarm-count { margin: 12px 0 0; font-size: 12px; letter-spacing: .2em; color: var(--muted); }
-.alarm.is-still .alarm-beam, .alarm.is-still .alarm-tape { display: none; }
+.alarm.is-still .alarm-beam, .alarm.is-still .alarm-tape, .alarm.is-still .alarm-spot, .alarm.is-still .alarm-lightbar { display: none; }
 .alarm.is-still .alarm-glow, .alarm.is-still .alarm-banner { animation: none; }
 
 /* ---------- Toast ---------- */
