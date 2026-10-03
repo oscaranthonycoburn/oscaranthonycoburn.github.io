@@ -50,5 +50,5 @@ content:
             type: boolean
           - name: hideAfter
             label: Hide after (optional)
-            type: date
-            description: The post disappears on its own after this date. Leave empty to keep it up until you delete it.
+            type: string
+            description: Type a date like 2026-12-31 and the post disappears on its own after that day. Leave EMPTY to keep it up until you delete it.
