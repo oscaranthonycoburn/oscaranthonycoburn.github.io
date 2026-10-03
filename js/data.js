@@ -39,6 +39,16 @@ window.SITE = {
   ],
   librarySlots: 6,
 
+  // News board sections. `key` sets the tag color (see .tag-* in css/style.css).
+  // Posts themselves live in content/news.json.
+  newsCategories: [
+    { key: "release",      name: "Releases" },
+    { key: "show",         name: "Shows" },
+    { key: "video",        name: "Videos" },
+    { key: "announcement", name: "Announcements" },
+    { key: "bts",          name: "Behind the Scenes" }
+  ],
+
   // Background music: loops forever behind the whole site. Fades out while a song video
   // plays and back in when it's paused. `seconds` = the original file length (keeps the loop seamless).
   background: { src: "assets/audio/background.m4a", seconds: 126.526, volume: 0.6 },

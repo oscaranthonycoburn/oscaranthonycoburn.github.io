@@ -52,46 +52,81 @@
     $("#libraryGrid").innerHTML = filled.concat(empty).join("");
   })();
 
-  /* ---------- News board (posts live in content/news.json) ---------- */
+  /* ---------- News board: a newspaper-style front page (posts live in content/news.json) ---------- */
   (function renderNews() {
     const board = $("#newsBoard");
     if (!board) return;
+    const CATS = S.newsCategories || [];
+    const catOf = name => CATS.find(c => c.name.toLowerCase() === String(name || "").toLowerCase()) || { name: name || "News", key: "news" };
     const today = new Date().toISOString().slice(0, 10);
     const fmtDate = d => {
       const [y, m, day] = (d || "").split("-").map(Number);
       return y ? new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "";
     };
+    const shortDate = d => {
+      const [y, m, day] = (d || "").split("-").map(Number);
+      return y ? new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+    };
     const safeUrl = u => /^(https?:\/\/|assets\/|\.\/|\/)/i.test(u || "") ? u : "";
     const paras = t => String(t || "").split(/\n\s*\n/).map(p => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
-    const empty = `<div class="news-empty"><p class="kicker">Nothing posted yet</p><p>Check back soon for news from Oscar.</p></div>`;
+
+    let posts = [], filter = "all";
+
+    function story(p, lead) {
+      const cat = catOf(p.category), img = safeUrl(p.image), link = safeUrl(p.link);
+      return `
+        <article class="story${lead ? " is-lead" : ""}${lead && String(p.body || "").length > 420 ? " is-long" : ""}">
+          <p class="story-kicker">
+            <span class="tag tag-${esc(cat.key)}">${esc(cat.name)}</span>
+            ${p.pinned ? `<span class="story-pin">Pinned</span>` : ""}
+            <time datetime="${esc(p.date || "")}">${esc(fmtDate(p.date))}</time>
+          </p>
+          <h2 class="story-headline">${esc(p.title)}</h2>
+          ${img ? `<div class="story-media"><img src="${esc(img)}" alt="" loading="lazy"></div>` : ""}
+          <div class="story-text">${paras(p.body)}</div>
+          ${link ? `<a class="story-link" href="${esc(link)}" target="_blank" rel="noopener">${esc(p.linkLabel || "Read more")} <span aria-hidden="true">↗</span></a>` : ""}
+        </article>`;
+    }
+
+    function render() {
+      const shown = filter === "all" ? posts : posts.filter(p => catOf(p.category).key === filter);
+      const latest = posts.reduce((m, p) => (p.date > m ? p.date : m), "");
+      const used = CATS.filter(c => posts.some(p => catOf(p.category).key === c.key));
+      board.innerHTML = `
+        <div class="paper">
+          <div class="paper-dateline">
+            <span>${latest ? `Updated ${esc(shortDate(latest))}` : "Oscar A. Coburn"}</span>
+            <span>${posts.length} ${posts.length === 1 ? "story" : "stories"}</span>
+          </div>
+          <div class="paper-sections" role="group" aria-label="Filter by category">
+            ${[{ key: "all", name: "All" }, ...used].map(c => `
+              <button class="section-chip${c.key === filter ? " is-active" : ""}" data-news-filter="${esc(c.key)}" aria-pressed="${c.key === filter}">
+                ${c.key === "all" ? "" : `<i class="dot tag-${esc(c.key)}" aria-hidden="true"></i>`}${esc(c.name)}
+              </button>`).join("")}
+          </div>
+          ${shown.length
+            ? `<div class="paper-grid">${shown.map((p, i) => story(p, i === 0)).join("")}</div>`
+            : `<div class="paper-empty"><p class="kicker">Nothing here yet</p><p>${posts.length ? "No stories in this section right now." : "Check back soon for news from Oscar."}</p></div>`}
+        </div>`;
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
+    }
+
+    board.addEventListener("click", e => {
+      const b = e.target.closest("[data-news-filter]");
+      if (!b) return;
+      filter = b.dataset.newsFilter;
+      render();
+      if (window.gsap && !reduced) gsap.from(".paper-grid > .story, .paper-empty", { y: 14, opacity: 0, duration: .5, ease: "expo.out", stagger: .05, clearProps: "transform,opacity" });
+    });
 
     fetch("content/news.json", { cache: "no-cache" })
       .then(r => r.ok ? r.json() : { posts: [] })
       .catch(() => ({ posts: [] }))
       .then(data => {
-        const posts = (data.posts || [])
+        posts = (data.posts || [])
           .filter(p => p && p.title && !p.hidden && !(p.hideAfter && p.hideAfter < today))   // gone after its end date
           .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || String(b.date).localeCompare(String(a.date)));
-        board.innerHTML = posts.length ? posts.map((p, i) => {
-          const img = safeUrl(p.image), link = safeUrl(p.link);
-          return `
-          <article class="news-card${i === 0 ? " is-lead" : ""}">
-            ${img ? `<div class="news-media"><img src="${esc(img)}" alt="" loading="lazy"></div>` : ""}
-            <div class="news-body">
-              <p class="news-meta">${p.pinned ? `<span class="news-pin">Pinned</span>` : ""}<time datetime="${esc(p.date || "")}">${esc(fmtDate(p.date))}</time></p>
-              <h2 class="news-title">${esc(p.title)}</h2>
-              <div class="news-text">${paras(p.body)}</div>
-              ${link ? `<a class="news-link" href="${esc(link)}" target="_blank" rel="noopener">${esc(p.linkLabel || "Read more")} <span aria-hidden="true">↗</span></a>` : ""}
-            </div>
-          </article>`;
-        }).join("") : empty;
-        if (window.ScrollTrigger && window.gsap && !reduced) {
-          $$(".news-card", board).forEach(el => gsap.from(el, {
-            y: 24, opacity: 0, duration: 1, ease: "expo.out", clearProps: "transform,opacity",
-            scrollTrigger: { trigger: el, start: "top 92%" }
-          }));
-          ScrollTrigger.refresh();
-        }
+        render();
       });
   })();
 
