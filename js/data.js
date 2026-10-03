@@ -45,5 +45,5 @@ window.SITE = {
   bioQuote: "Up and coming musician, singer, songwriter, and guitar player",
 
   // Final public URL. Keep in sync with the og:/twitter: tags in index.html.
-  siteUrl: "https://triddell29-lgtm.github.io/oscar-coburn-site/"
+  siteUrl: "https://oscaranthonycoburn.github.io/"
 };

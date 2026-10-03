@@ -16,9 +16,7 @@ All content (tracks, links, colors, bio) lives in `js/data.js`.
 
 `js/deck.js` runs the record in the About section. Dragging it about 72° moves one song (5 songs = one full turn). It plays through the YouTube IFrame API, and only one player (deck or tracklist) plays at a time.
 
-## Deploy to GitHub Pages
-1. Push this folder's contents to a repo named `oscar-coburn-site`.
-2. Go to **Settings → Pages → Deploy from branch → `main` / root**.
-3. The site goes live at `https://<username>.github.io/oscar-coburn-site/`.
+## Deploy
+Hosted free on GitHub Pages from the `oscaranthonycoburn/oscaranthonycoburn.github.io` repo (branch `main`, root), live at https://oscaranthonycoburn.github.io/. Pushing to `main` republishes in about a minute.
 
-If the URL is different, update `og:url`, `og:image` and `twitter:image` in `index.html` and `siteUrl` in `js/data.js`. Social previews need absolute URLs.
+If the address changes (e.g. a custom domain), update `og:url`, `og:image` and `twitter:image` in `index.html` and `siteUrl` in `js/data.js`. Social previews need absolute URLs.
