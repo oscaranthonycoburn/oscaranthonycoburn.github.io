@@ -25,8 +25,19 @@ window.SITE = {
     youtube:   "https://www.youtube.com/@OscarAnthonyCoburn?sub_confirmation=1",
     tiktok:    "https://www.tiktok.com/@oscaranthonycoburn",
     instagram: "https://www.instagram.com/oscar_c0burn/",
-    playlist:  "https://www.youtube.com/playlist?list=PLdRANicuQT_E"
+    playlist:  "https://www.youtube.com/playlist?list=PLdRANicuQT_E",
+    // TODO: swap for the exact album link (Spotify → ••• → Share → Copy link to album).
+    spotify:   "https://open.spotify.com/search/Oscar%20Coburn%20I%20Ain%27t%20Perfect"
   },
+
+  // Library page: every release, newest first. Empty "+" slots fill the rest of the grid
+  // (at least `librarySlots`, rounded up to a full row of 3). To add an album, copy the
+  // entry below, change it, and drop its cover in assets/.
+  library: [
+    { title: "I Ain't Perfect", type: "EP", year: "2026", songs: 5,
+      cover: "assets/cover.jpg", url: "spotify" }   // "spotify" = use links.spotify; or paste any URL
+  ],
+  librarySlots: 6,
 
   tracks: [
     { title: "Subhuman Nature", length: "4:57", id: "himYSGRDR0Q" },

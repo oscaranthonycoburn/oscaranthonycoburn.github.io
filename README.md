@@ -14,6 +14,11 @@ If you get a higher-resolution cover, replace `cover.jpg` and update the `aspect
 
 All content (tracks, links, colors, bio) lives in `js/data.js`.
 
+## Pages
+- `index.html`: Home (the EP page).
+- `library.html`: Library, a grid of releases. To add an album, copy the entry in `library` in `js/data.js`, change it, and put its cover in `assets/`. Empty "+" slots fill the rest (at least `librarySlots`, rounded up to a full row of 3).
+- `links.spotify` in `js/data.js` is used by the library album, the hero cover, the hero Spotify button and the Follow card. It's currently a Spotify search; replace it with the exact album link.
+
 `js/deck.js` runs the record in the About section. Dragging it about 72° moves one song (5 songs = one full turn). It plays through the YouTube IFrame API, and only one player (deck or tracklist) plays at a time.
 
 ## Deploy

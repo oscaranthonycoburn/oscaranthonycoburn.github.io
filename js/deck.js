@@ -39,7 +39,7 @@
     $("#nowMeta").textContent = `Track ${pad(i + 1)} of ${pad(N)} · ${t.length}`;
     $("#nowState").textContent =
       preview !== null && preview !== idx ? "Let go to play" :
-      playing ? "Now playing" :
+      playing ? (yt && yt.isMuted && yt.isMuted() ? "Playing · sound off" : "Now playing") :
       ytReady && deck.classList.contains("has-video") ? "Paused" : "Spin to play";
     $$("#nowList button").forEach(b => {
       const on = +b.dataset.deck === i;
@@ -53,32 +53,26 @@
   }
 
   /* ---------- YouTube player ---------- */
-  function loadApi() {
-    if (loadApi.p) return loadApi.p;
-    return (loadApi.p = new Promise(resolve => {
-      if (window.YT && YT.Player) return resolve();
-      const prev = window.onYouTubeIframeAPIReady;
-      window.onYouTubeIframeAPIReady = () => { prev && prev(); resolve(); };
-      const s = document.createElement("script");
-      s.src = "https://www.youtube.com/iframe_api";
-      document.head.append(s);
-    }));
-  }
+  // The deck starts playing by itself (muted, as browsers require) when it scrolls into
+  // view. The first time the visitor touches it, the deck switches to normal play with sound.
+  const pill = $("#deckSound");
+  let autoMode = !reduced;
+  let inView = false;
+  let pausedByUs = false, retries = 0;
+  const listPlayerOpen = () => { const p = $("#player"); return p && !p.hidden; };
+
   function ensurePlayer() {
     if (ensurePlayer.p) return ensurePlayer.p;
-    return (ensurePlayer.p = loadApi().then(() => new Promise(resolve => {
-      yt = new YT.Player("deckPlayer", {
-        host: "https://www.youtube-nocookie.com",
-        videoId: tracks[idx].id,
-        width: "100%", height: "100%",
-        playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
-        events: {
-          onReady: () => { ytReady = true; render(); resolve(); },
-          onStateChange: onState
-        }
+    return (ensurePlayer.p = OCYT.load().then(() => new Promise(resolve => {
+      yt = OCYT.create("deckPlayer", tracks[idx].id, {
+        onReady: () => { ytReady = true; render(); resolve(); },
+        onStateChange: onState
       });
     })));
   }
+  OCYT.wirePill(pill, () => yt);
+  pill.addEventListener("click", () => { autoMode = false; render(); });
+
   function onState(e) {
     const st = e.data;
     if (st === YT.PlayerState.PLAYING) {
@@ -87,25 +81,60 @@
       document.dispatchEvent(new CustomEvent("oc:play", { detail: "deck" }));
     } else if (st === YT.PlayerState.ENDED) {
       playing = false;
-      select(idx + 1, true);           // play the EP straight through
+      // play the EP straight through
+      if (autoMode) {
+        idx = wrap(idx + 1); render();
+        yt.loadVideoById(tracks[idx].id);
+        OCYT.play(yt, pill, { muted: true });
+      } else select(idx + 1, true);
       return;
     } else if (st !== YT.PlayerState.BUFFERING) {
       playing = false;
+      // Browsers sometimes pause muted auto-play on their own (e.g. while the page is
+      // still settling). If we didn't ask for it and it's on screen, try again.
+      if (st === YT.PlayerState.PAUSED && autoMode && inView && !pausedByUs && retries < 3 &&
+          document.visibilityState === "visible") {
+        retries++;
+        setTimeout(() => { if (autoMode && inView && !playing) OCYT.play(yt, pill, { muted: true }); }, 500);
+      }
     }
+    if (st === YT.PlayerState.PLAYING) retries = 0;
     render();
   }
-  // Preload the player before the visitor reaches the deck, so the first spin
-  // starts playback inside the gesture (mobile browsers require that).
+  // Clicking inside the YouTube frame moves focus into it: treat that as the visitor taking over.
+  window.addEventListener("blur", () => {
+    setTimeout(() => {
+      if (document.activeElement && document.activeElement.id === "deckPlayer") { autoMode = false; render(); }
+    }, 0);
+  });
+
+  function autoStart() {
+    if (!autoMode || !inView || listPlayerOpen()) return;
+    ensurePlayer().then(() => {
+      if (!autoMode || !inView || playing || listPlayerOpen()) return;
+      deck.classList.add("has-video");
+      pausedByUs = false;
+      OCYT.play(yt, pill, { muted: true });
+    });
+  }
   if ("IntersectionObserver" in window) {
-    const io = new IntersectionObserver(es => {
-      if (es.some(e => e.isIntersecting)) { ensurePlayer(); io.disconnect(); }
+    // Load the player a little before the deck is reached so it's ready instantly.
+    const early = new IntersectionObserver(es => {
+      if (es.some(e => e.isIntersecting)) { ensurePlayer(); early.disconnect(); }
     }, { rootMargin: "600px 0px" });
-    io.observe(deck);
+    early.observe(deck);
+    // Auto-play while on screen; pause muted auto-play when scrolled away.
+    new IntersectionObserver(es => {
+      inView = es.some(e => e.isIntersecting);
+      if (inView) autoStart();
+      else if (autoMode && ytReady && playing) { pausedByUs = true; yt.pauseVideo(); }
+    }, { threshold: 0.45 }).observe(deck);
   } else ensurePlayer();
 
   function play(i) {
+    autoMode = false;   // a deliberate choice: play with sound
     deck.classList.add("has-video");
-    const go = () => yt.loadVideoById(tracks[i].id);
+    const go = () => { yt.loadVideoById(tracks[i].id); OCYT.play(yt, pill); };
     ytReady ? go() : ensurePlayer().then(go);
   }
   function select(i, autoplay) {
@@ -114,17 +143,27 @@
     idx = next;
     preview = null;
     render();
-    if (autoplay && (changed || !playing)) play(idx);
+    if (autoplay && (changed || !playing || autoMode)) play(idx);
   }
   function toggle() {
     if (!ytReady) { play(idx); return; }
+    if (autoMode && playing) {          // first tap on a muted auto-play: turn the sound on
+      autoMode = false;
+      yt.unMute(); yt.setVolume(100);
+      OCYT.showPill(pill, false);
+      render();
+      return;
+    }
+    autoMode = false;
     if (playing) yt.pauseVideo();
-    else if (deck.classList.contains("has-video")) yt.playVideo();
+    else if (deck.classList.contains("has-video")) OCYT.play(yt, pill);
     else play(idx);
   }
   // Pause when the tracklist player starts.
   document.addEventListener("oc:play", e => {
-    if (e.detail !== "deck" && ytReady && playing) yt.pauseVideo();
+    if (e.detail === "deck") return;
+    autoMode = false;
+    if (ytReady && playing) yt.pauseVideo();
   });
 
   /* ---------- Spin physics ---------- */

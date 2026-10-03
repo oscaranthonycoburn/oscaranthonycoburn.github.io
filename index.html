@@ -39,6 +39,10 @@
 
   <header class="nav">
     <a href="#top" class="nav-logo" data-scroll>Oscar A. Coburn</a>
+    <nav class="nav-pages" aria-label="Pages">
+      <a href="./" aria-current="page">Home</a>
+      <a href="library.html">Library</a>
+    </nav>
     <nav class="nav-links" aria-label="Sections">
       <a href="#tracks" data-scroll>Tracks</a>
       <a href="#spin" data-scroll>Listen</a>
@@ -56,11 +60,14 @@
       <div class="cover-wrap">
         <div class="cover-glow" aria-hidden="true"><img data-src="cover" alt=""></div>
         <div class="cover-ghost" aria-hidden="true"><img data-src="cover" alt=""></div>
-        <figure class="cover">
-          <img data-src="cover" alt="I Ain't Perfect EP cover: a motion-blurred, warm-toned film photo" width="1215" height="1286">
-          <span class="img-missing">Add assets/cover.jpg</span>
-          <div class="streaks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-        </figure>
+        <a class="cover-link" data-link="spotify" target="_blank" rel="noopener" aria-label="Listen to I Ain't Perfect on Spotify">
+          <figure class="cover">
+            <img data-src="cover" alt="I Ain't Perfect EP cover: a motion-blurred, warm-toned film photo" width="1215" height="1286">
+            <span class="img-missing">Add assets/cover.jpg</span>
+            <div class="streaks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <span class="cover-badge" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5a10.5 10.5 0 1 0 0 21 10.5 10.5 0 0 0 0-21zm4.8 15.2a.65.65 0 0 1-.9.2c-2.5-1.5-5.6-1.8-9.3-1a.65.65 0 1 1-.3-1.3c4-.9 7.5-.5 10.3 1.2.3.2.4.6.2.9zm1.3-2.9a.8.8 0 0 1-1.1.3c-2.8-1.7-7.2-2.2-10.5-1.2a.8.8 0 1 1-.5-1.6c3.8-1.1 8.6-.6 11.8 1.4.4.2.5.7.3 1.1zm.1-3c-3.4-2-9-2.2-12.2-1.2a1 1 0 1 1-.6-1.9c3.7-1.1 9.9-.9 13.8 1.4a1 1 0 0 1-1 1.7z"/></svg> Listen on Spotify</span>
+          </figure>
+        </a>
       </div>
 
       <div class="hero-copy">
@@ -73,6 +80,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
             Listen Now
           </a>
+          <a class="btn btn-spotify" data-link="spotify" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5a10.5 10.5 0 1 0 0 21 10.5 10.5 0 0 0 0-21zm4.8 15.2a.65.65 0 0 1-.9.2c-2.5-1.5-5.6-1.8-9.3-1a.65.65 0 1 1-.3-1.3c4-.9 7.5-.5 10.3 1.2.3.2.4.6.2.9zm1.3-2.9a.8.8 0 0 1-1.1.3c-2.8-1.7-7.2-2.2-10.5-1.2a.8.8 0 1 1-.5-1.6c3.8-1.1 8.6-.6 11.8 1.4.4.2.5.7.3 1.1zm.1-3c-3.4-2-9-2.2-12.2-1.2a1 1 0 1 1-.6-1.9c3.7-1.1 9.9-.9 13.8 1.4a1 1 0 0 1-1 1.7z"/></svg> Spotify</a>
           <button class="btn btn-ghost" data-share>Share this EP</button>
         </div>
       </div>
@@ -95,7 +103,10 @@
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
             </button>
           </div>
-          <div class="player-video" id="playerVideo"></div>
+          <div class="player-video">
+            <div class="player-frame" id="playerVideo"></div>
+            <button class="sound-pill" id="playerSound" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg> Tap for sound</button>
+          </div>
           <div class="player-nav">
             <button class="btn btn-ghost btn-sm" data-prev>← Prev</button>
             <button class="btn btn-ghost btn-sm" data-next>Next →</button>
@@ -130,6 +141,7 @@
           <div class="now-video">
             <div id="deckPlayer"></div>
             <div class="now-empty">Give the record a spin</div>
+            <button class="sound-pill" id="deckSound" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg> Tap for sound</button>
           </div>
           <div class="now-controls">
             <button class="icon-btn" data-deck-prev aria-label="Previous song">
@@ -179,6 +191,11 @@
         <h2 class="section-title">Stay Tuned</h2>
       </div>
       <div class="follow-grid">
+        <a class="follow-btn" data-link="spotify" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5a10.5 10.5 0 1 0 0 21 10.5 10.5 0 0 0 0-21zm4.8 15.2a.65.65 0 0 1-.9.2c-2.5-1.5-5.6-1.8-9.3-1a.65.65 0 1 1-.3-1.3c4-.9 7.5-.5 10.3 1.2.3.2.4.6.2.9zm1.3-2.9a.8.8 0 0 1-1.1.3c-2.8-1.7-7.2-2.2-10.5-1.2a.8.8 0 1 1-.5-1.6c3.8-1.1 8.6-.6 11.8 1.4.4.2.5.7.3 1.1zm.1-3c-3.4-2-9-2.2-12.2-1.2a1 1 0 1 1-.6-1.9c3.7-1.1 9.9-.9 13.8 1.4a1 1 0 0 1-1 1.7z"/></svg>
+          <span><strong>Listen on Spotify</strong><small>I Ain't Perfect · EP</small></span>
+          <i aria-hidden="true">↗</i>
+        </a>
         <a class="follow-btn" data-link="youtube" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8zM9.75 15.02V8.98L15.5 12z"/></svg>
           <span><strong>Subscribe on YouTube</strong><small>@OscarAnthonyCoburn</small></span>
@@ -219,6 +236,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script src="js/yt.js"></script>
   <script src="js/main.js"></script>
   <script src="js/deck.js"></script>
 </body>
