@@ -75,7 +75,8 @@ window.SITE = {
   // "Meet Oscar" section
   roles: ["Musician", "Singer", "Songwriter", "Guitar player"],
   bio: [
-    "[Artist bio coming soon. Oscar to provide.]"
+    "Oscar A. Coburn is an Arizona-born singer, songwriter, and musician who has been obsessed with music from a young age. He started playing guitar and singing as a kid, and quickly fell in love with writing, recording, and creating his own music.",
+    "Inspired by artists such as Zach Bryan, Red Hot Chili Peppers, The Lumineers, and the people and experiences that have shaped his life, Oscar brings his own stories and emotions into everything he creates. As an independent artist, he writes, records, and produces his own music, every song is raw emotion all in one take. Oscar has just released his debut EP, I Ain’t Perfect, available now on all major streaming platforms."
   ],
 
   bioQuote: "Up and coming musician, singer, songwriter, and guitar player",

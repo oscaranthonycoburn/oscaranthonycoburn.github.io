@@ -9,10 +9,7 @@ Promo site for Oscar A. Coburn's debut EP (released October 2, 2026). It's plain
 
 If you get a higher-resolution cover, replace `cover.jpg` and update the `aspect-ratio` on `.cover-wrap` in `css/style.css` to match.
 
-## Before deploying
-- Add Oscar's bio to `bio` in `js/data.js` (one string per paragraph). It shows in the "Meet Oscar" section.
-
-All content (tracks, links, colors, bio) lives in `js/data.js`.
+All content (tracks, links, colors, bio) lives in `js/data.js`. The "Meet Oscar" bio is `bio` there, one string per paragraph.
 
 ## Music
 - **Background music** (`js/bg.js`): `assets/audio/background.m4a` loops forever behind the whole site (gapless, via the Web Audio API). It starts on page load when the browser allows it, otherwise at the visitor's first tap or click. It pauses while the tab is in the background. Settings are in `background` in `js/data.js` (file, exact length in seconds, volume).
