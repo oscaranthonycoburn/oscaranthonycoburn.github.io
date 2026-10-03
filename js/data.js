@@ -26,10 +26,8 @@ window.SITE = {
     tiktok:    "https://www.tiktok.com/@oscaranthonycoburn",
     instagram: "https://www.instagram.com/oscar_c0burn/",
     playlist:  "https://www.youtube.com/playlist?list=PLdRANicuQT_E",
-    // TODO: swap for the exact album link (Spotify → ••• → Share → Copy link to album).
-    spotify:   "https://open.spotify.com/search/Oscar%20Coburn%20I%20Ain%27t%20Perfect",
-    // TODO: swap for the exact album link (Apple Music → ••• → Share → Copy Link).
-    appleMusic: "https://music.apple.com/us/search?term=Oscar%20Coburn%20I%20Ain%27t%20Perfect"
+    spotify:    "https://open.spotify.com/album/3oG4AVbBcS29V9o9uxxFZU",
+    appleMusic: "https://music.apple.com/us/album/i-aint-perfect-ep/6815467920"
   },
 
   // Library page: every release, newest first. Empty "+" slots fill the rest of the grid
