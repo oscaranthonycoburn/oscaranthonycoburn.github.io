@@ -111,13 +111,17 @@
             </div>
             <div class="sleeve"><img data-src="cover" draggable="false" alt="I Ain't Perfect record sleeve" width="1215" height="1286" loading="lazy"></div>
           </div>
-          <p class="deck-hint"><span aria-hidden="true">↻</span> Drag the record to switch songs · tap to play or pause</p>
+          <p class="deck-hint"><span aria-hidden="true">↻</span> Turn the record to switch songs · tap it to play or pause</p>
         </div>
 
         <div class="now">
           <p class="kicker" id="nowState">Spin to play</p>
           <h3 class="now-title" id="nowTitle" aria-live="polite"></h3>
           <p class="now-meta" id="nowMeta"></p>
+          <div class="now-video">
+            <div id="deckPlayer"></div>
+            <button class="now-hit" aria-label="Play or pause the video"></button>
+          </div>
           <div class="now-progress">
             <span class="now-time" id="nowTime">0:00</span>
             <input class="range" type="range" id="nowSeek" min="0" max="1000" value="0" step="1" aria-label="Song position">
@@ -136,12 +140,7 @@
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 10 7-10 7zM18 5v14"/></svg>
             </button>
           </div>
-          <div class="now-volume">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>
-            <input class="range" type="range" id="nowVol" min="0" max="100" value="100" aria-label="Volume">
-          </div>
           <ol class="now-list" id="nowList"></ol>
-          <a class="now-watch" id="nowWatch" target="_blank" rel="noopener">Watch the video on YouTube ↗</a>
         </div>
       </div>
     </section>
@@ -230,23 +229,6 @@
     <p>All music by Oscar A. Coburn.</p>
   </footer>
 
-  <!-- Now-playing bar: follows you around the site once music has started -->
-  <div class="mini" id="mini" hidden>
-    <img class="mini-art" data-src="cover" alt="">
-    <button class="mini-meta" data-mini-open aria-label="Open the record player">
-      <span class="mini-title" id="miniTitle"></span>
-      <span class="mini-sub">Oscar A. Coburn · I Ain't Perfect</span>
-    </button>
-    <button class="icon-btn mini-btn" data-mini-toggle aria-label="Pause">
-      <svg viewBox="0 0 24 24" aria-hidden="true" class="i-play"><path d="M8 5v14l11-7z"/></svg>
-      <svg viewBox="0 0 24 24" aria-hidden="true" class="i-pause"><path d="M7 5h4v14H7zm6 0h4v14h-4z"/></svg>
-    </button>
-    <button class="icon-btn mini-btn" data-mini-next aria-label="Next song">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 10 7-10 7zM18 5v14"/></svg>
-    </button>
-    <span class="mini-progress" aria-hidden="true"><i id="miniProgress"></i></span>
-  </div>
-
   <!-- "Listen on" chooser: opens when you click an album -->
   <dialog class="listen" id="listen" aria-labelledby="listenTitle">
     <div class="listen-panel">
@@ -273,7 +255,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-  <script src="js/audio.js"></script>
+  <script src="js/bg.js"></script>
+  <script src="js/yt.js"></script>
   <script src="js/main.js"></script>
   <script src="js/deck.js"></script>
 </body>

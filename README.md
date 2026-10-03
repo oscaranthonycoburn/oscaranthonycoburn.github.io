@@ -15,9 +15,11 @@ If you get a higher-resolution cover, replace `cover.jpg` and update the `aspect
 All content (tracks, links, colors, bio) lives in `js/data.js`.
 
 ## Music
-The site plays the EP as background music (`js/audio.js`). It tries to start on page load and otherwise starts at the visitor's first tap or click (browsers block sound before that). The record deck, tracklist and the now-playing bar all control it, and it plays through the EP and loops.
+- **Background music** (`js/bg.js`): `assets/audio/background.m4a` loops forever behind the whole site (gapless, via the Web Audio API). It starts on page load when the browser allows it, otherwise at the visitor's first tap or click. It pauses while the tab is in the background. Settings are in `background` in `js/data.js` (file, exact length in seconds, volume).
+- **Songs** play as YouTube videos on the record (`js/deck.js`, `js/yt.js`). Turning the record or tapping a song in the tracklist plays that video. When a video ends, the record turns to the next song. YouTube's own controls are hidden; the record, the video and the Play/Prev/Next buttons are the controls.
+- While a song plays, the background music fades out. When the song is paused, it fades back in.
 
-Song files go in `assets/audio/` with the names set in `tracks[].audio` in `js/data.js` (MP3 or M4A).
+To replace the background track: convert it with `afconvert -f m4af -d aac -b 192000 in.wav assets/audio/background.m4a` and update `background.seconds`.
 
 ## Pages
 Home and Library are both in `index.html`, so switching between them never stops the music. `#library` opens the Library; `library.html` just redirects there for old links.

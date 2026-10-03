@@ -1,6 +1,5 @@
 (function () {
   const S = window.SITE;
-  const A = window.OCAudio;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -77,7 +76,7 @@
   $("[data-listen-close]").addEventListener("click", () => listen.close());
   $$(".listen-btn").forEach(b => b.addEventListener("click", () => setTimeout(() => listen.close(), 150)));
 
-  /* ---------- Tracklist: tapping a song plays it as the background music ---------- */
+  /* ---------- Tracklist: tapping a song plays it on the record ---------- */
   const tracks = S.tracks.map((t, i) => ({ ...t, i }));
   const playIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>`;
   $("#trackList").innerHTML = tracks.map(t => `
@@ -99,55 +98,26 @@
   $("#roles").innerHTML = S.roles.map(r => `<li>${esc(r)}</li>`).join("");
   $("#bio").innerHTML = S.bio.map(p => `<p>${esc(p)}</p>`).join("");
 
+  const deckApi = () => window.OCDeck;
   document.addEventListener("click", e => {
     const p = e.target.closest("[data-play]");
-    if (!p) return;
+    if (!p || !deckApi()) return;
     const i = +p.dataset.play;
-    if (i === A.index && A.playing) A.pause();     // tapping the playing song pauses it
-    else A.play(i);
+    if (i === deckApi().index && deckApi().playing) deckApi().toggle();   // tapping the playing song pauses it
+    else { deckApi().play(i); goTo($("#spin")); }
   });
-  function renderTracks() {
+  // Cards show which song is playing on the record.
+  document.addEventListener("oc:deck", e => {
+    const { index, playing } = e.detail;
     $$(".track-card").forEach(c => {
-      const on = +c.dataset.play === A.index && A.playing;
+      const on = +c.dataset.play === index && playing;
       c.classList.toggle("is-playing", on);
       c.setAttribute("aria-pressed", on);
     });
-  }
-  A.on("track", renderTracks);
-  A.on("state", renderTracks);
-
-  // "Listen Now" starts the music and takes you to the record.
-  $$("[data-listen]").forEach(b => b.addEventListener("click", () => { if (!A.playing) A.play(); }));
-
-  /* ---------- Now-playing bar ---------- */
-  const mini = $("#mini");
-  let deckVisible = false;
-  function renderMini() {
-    $("#miniTitle").textContent = S.tracks[A.index].title;
-    mini.classList.toggle("is-playing", A.playing);
-    $("[data-mini-toggle]").setAttribute("aria-label", A.playing ? "Pause" : "Play");
-    const onHome = !$("#top").hidden;
-    const show = A.started && !(onHome && deckVisible);
-    if (show !== !mini.hidden) {
-      mini.hidden = !show;
-      document.body.classList.toggle("has-mini", show);
-    }
-  }
-  A.on("track", renderMini);
-  A.on("state", renderMini);
-  A.on("time", () => {
-    const d = A.duration;
-    $("#miniProgress").style.transform = `scaleX(${d ? A.currentTime / d : 0})`;
   });
-  $("[data-mini-toggle]").addEventListener("click", () => A.toggle());
-  $("[data-mini-next]").addEventListener("click", () => A.next());
-  $("[data-mini-open]").addEventListener("click", () => {
-    goTo($("#spin"));
-  });
-  if ("IntersectionObserver" in window) {
-    new IntersectionObserver(es => { deckVisible = es.some(e => e.isIntersecting); renderMini(); }, { threshold: 0.25 })
-      .observe($("#deck"));
-  }
+
+  // "Listen Now" takes you to the record and starts the current song.
+  $$("[data-listen]").forEach(b => b.addEventListener("click", () => { if (deckApi() && !deckApi().playing) deckApi().play(); }));
 
   /* ---------- Views: Home and Library live in one page so the music never stops ---------- */
   const TITLES = { home: "I Ain't Perfect · Oscar A. Coburn", library: "Library · Oscar A. Coburn" };
@@ -177,7 +147,6 @@
     document.title = TITLES[name];
     if (scroll) { lenis ? lenis.scrollTo(0, { immediate: true }) : window.scrollTo(0, 0); }
     if (window.ScrollTrigger) ScrollTrigger.refresh();
-    renderMini();
   }
   // Smooth switch: the tab highlight slides right away while the page content
   // fades out, swaps (and jumps to the top while invisible), then fades back in.
@@ -251,9 +220,6 @@
     e.preventDefault();
     goTo(target);
   }));
-
-  renderTracks();
-  renderMini();
 
   // Everything below is motion. Content above is fully usable without it.
   if (!window.gsap || !window.ScrollTrigger || reduced) { route(); return; }
