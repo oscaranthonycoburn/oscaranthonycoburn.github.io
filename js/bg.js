@@ -2,7 +2,8 @@
    - Gapless loop via the Web Audio API.
    - Starts as soon as the browser allows: right away if permitted, otherwise at the
      visitor's first tap/click/keypress (browsers block sound before that).
-   - duck() fades it out (a song video started); unduck() fades it back in.
+   - duck(): a song started -> fade out quickly, then actually pause (keeps its place).
+   - unduck(): the song was paused -> resume from the same spot and fade back in.
    - Pauses while the tab is in the background. */
 window.OCBg = (function () {
   const cfg = window.SITE && window.SITE.background;
@@ -16,7 +17,8 @@ window.OCBg = (function () {
   gain.connect(ctx.destination);
   const VOLUME = cfg.volume ?? 0.6;
 
-  let source = null, ducked = false, unlocked = false;
+  let source = null, ducked = false, unlocked = false, pauseTimer = null;
+  const FADE_OUT = 0.35, FADE_IN = 0.8;   // seconds
 
   function fadeTo(v, secs) {
     const t = ctx.currentTime;
@@ -24,7 +26,22 @@ window.OCBg = (function () {
     gain.gain.setValueAtTime(gain.gain.value, t);
     gain.gain.linearRampToValueAtTime(v, t + secs);
   }
-  const apply = () => fadeTo(ducked ? 0 : VOLUME, ducked ? 0.6 : 2);
+  function apply() {
+    clearTimeout(pauseTimer);
+    if (ducked) {
+      // Quick fade, then really pause (suspend keeps the playback position).
+      if (ctx.state !== "running") return;
+      fadeTo(0, FADE_OUT);
+      pauseTimer = setTimeout(() => { if (ducked) ctx.suspend(); }, FADE_OUT * 1000 + 30);
+    } else if (unlocked) {
+      const fadeIn = () => {
+        gain.gain.cancelScheduledValues(ctx.currentTime);
+        gain.gain.setValueAtTime(Math.min(gain.gain.value, VOLUME), ctx.currentTime);
+        fadeTo(VOLUME, FADE_IN);
+      };
+      ctx.state === "running" ? fadeIn() : ctx.resume().then(fadeIn).catch(() => {});
+    }
+  }
 
   fetch(cfg.src)
     .then(r => r.arrayBuffer())
@@ -47,7 +64,7 @@ window.OCBg = (function () {
   // Works immediately if the browser allows autoplay; otherwise waits for a tap.
   function tryStart() {
     ctx.resume().then(() => {
-      if (ctx.state === "running") { unlocked = true; apply(); stopListening(); }
+      if (ctx.state === "running") { unlocked = true; stopListening(); apply(); }
     }).catch(() => {});
   }
   const UNLOCK = ["pointerup", "touchend", "click", "keydown"];
@@ -61,14 +78,14 @@ window.OCBg = (function () {
 
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) ctx.suspend();
-    else if (unlocked) ctx.resume();
+    else if (unlocked && !ducked) apply();
   });
 
   return {
     duck() { if (!ducked) { ducked = true; apply(); } },
     unduck() { if (ducked) { ducked = false; apply(); } },
     get ducked() { return ducked; },
-    get running() { return ctx.state === "running"; },   // sound is allowed and playing
+    get running() { return ctx.state === "running"; },   // playing (false while paused for a song)
     get level() { return gain.gain.value; }              // current volume (0 while faded out)
   };
 })();

@@ -26,7 +26,7 @@
 
   let idx = 0, preview = null, playing = false, started = false;
   let rot = 0, speed = 0, dragging = false;
-  let yt = null, ready = null;
+  let yt = null, ready = null, startTimer = null;
 
   /* ---------- Panel ---------- */
   $("#nowList").innerHTML = tracks.map((t, i) => `
@@ -91,6 +91,7 @@
   function onState(e) {
     if (e.data === OCYT.PLAYING) {
       playing = true; started = true;
+      clearTimeout(startTimer);
       BG.duck();
     } else if (e.data === OCYT.ENDED) {
       playing = false;
@@ -104,19 +105,38 @@
     render();
   }
 
+  // Pause the background the moment a song is asked to play, not when YouTube reports
+  // back. If the video never actually starts (e.g. blocked), bring the background back.
+  function songStarting() {
+    BG.duck();
+    clearTimeout(startTimer);
+    startTimer = setTimeout(() => {
+      const st = yt && yt.getPlayerState ? yt.getPlayerState() : -1;
+      if (st !== OCYT.PLAYING && st !== OCYT.BUFFERING) { playing = false; BG.unduck(); render(); }
+    }, 4000);
+  }
+
   function play(i) {
     if (i !== undefined) idx = wrap(i);
     preview = null;
     started = true;
+    songStarting();
     render();
     const go = () => { yt.loadVideoById(tracks[idx].id); };
     yt && yt.loadVideoById ? go() : ensurePlayer().then(go);
   }
   function toggle() {
     if (!yt || !yt.getPlayerState) { play(); return; }
-    if (playing) yt.pauseVideo();
-    else if (started) yt.playVideo();
-    else play();
+    if (playing) {
+      yt.pauseVideo();
+      playing = false;
+      clearTimeout(startTimer);
+      BG.unduck();          // background comes back right away
+      render();
+    } else if (started) {
+      songStarting();
+      yt.playVideo();
+    } else play();
   }
 
   // Other parts of the site (tracklist, Listen Now) use this.
