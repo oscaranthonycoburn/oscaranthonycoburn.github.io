@@ -9,16 +9,6 @@
       "linkLabel": "Listen on Spotify",
       "pinned": true,
       "hideAfter": "2026-10-03"
-    },
-    {
-      "title": "tate test #1",
-      "category": "Announcements",
-      "date": "2026-10-03",
-      "body": "test test test test",
-      "link": "https://www.youtube.com/@OscarAnthonyCoburn/shorts",
-      "linkLabel": "Oscar yt",
-      "pinned": false,
-      "hideAfter": "2026-10-03"
     }
   ]
 }
