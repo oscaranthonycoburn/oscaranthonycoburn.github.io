@@ -82,11 +82,8 @@
     $("#bio").innerHTML = S.bio.map(p => `<p>${esc(p)}</p>`).join("");
 
     const player = $("#player");
-    const pill = $("#playerSound");
     let current = -1;
     let yt = null;
-
-    window.OCYT && OCYT.wirePill(pill, () => yt);
 
     function setPlaying(i) {
       $$(".track-card").forEach(c => {
@@ -105,14 +102,14 @@
       }
       if (yt && yt.loadVideoById) {
         yt.loadVideoById(t.id);
-        OCYT.play(yt, pill);
+        OCYT.play(yt);
         return;
       }
       $("#playerVideo").innerHTML = `<div id="listPlayer"></div>`;
       OCYT.load().then(() => {
         if (player.hidden) return;   // closed before the API arrived
         yt = OCYT.create("listPlayer", tracks[current].id, {
-          onReady: e => OCYT.play(e.target, pill),
+          onReady: e => OCYT.play(e.target),
           onStateChange: e => {
             if (e.data === YT.PlayerState.ENDED) openTrack(current + 1);   // keep the EP going
           }
@@ -141,7 +138,6 @@
       if (player.hidden) return;
       if (yt && yt.destroy) { yt.destroy(); yt = null; }
       $("#playerVideo").innerHTML = "";   // stops playback
-      window.OCYT && OCYT.showPill(pill, false);
       player.hidden = true;
       setPlaying(-1);
       if (window.ScrollTrigger) ScrollTrigger.refresh();

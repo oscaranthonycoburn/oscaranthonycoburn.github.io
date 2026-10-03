@@ -1,10 +1,12 @@
 /* Shared YouTube helpers for both players (tracklist + record deck).
-   Browsers only allow autoplay WITH sound after the visitor has interacted with the page.
-   So: try to play with sound; if the browser blocks it, play muted and show a
-   "Tap for sound" button over the video. */
+   Browsers only allow sound after the visitor's first tap/click/keypress on the page.
+   So: try to play with sound; if that's blocked, play muted and turn the sound on
+   automatically at the visitor's first interaction anywhere on the page. */
 window.OCYT = (function () {
   const PLAYING = 1, BUFFERING = 3;
   let apiPromise = null;
+  const waitingForSound = new Set();   // players playing muted until the first interaction
+  let interacted = false;
 
   function load() {
     if (apiPromise) return apiPromise;
@@ -28,36 +30,58 @@ window.OCYT = (function () {
     });
   }
 
-  // Start playback; fall back to muted if sound is blocked.
-  function play(player, pill, { muted = false } = {}) {
-    if (muted) player.mute(); else player.unMute();
+  function soundOn(player) {
+    player.unMute();
+    player.setVolume(100);
+    waitingForSound.delete(player);
+  }
+
+  // Start playback. With `muted`, or if the browser blocks sound, play muted and
+  // switch the sound on at the first interaction.
+  function play(player, { muted = false } = {}) {
+    if (muted && !interacted) {
+      player.mute();
+      player.playVideo();
+      waitingForSound.add(player);
+      return;
+    }
+    soundOn(player);
     player.playVideo();
-    if (muted) { showPill(pill, true); return; }
-    showPill(pill, false);
     setTimeout(() => {
       const st = player.getPlayerState && player.getPlayerState();
       if (st !== PLAYING && st !== BUFFERING) {
         player.mute();
         player.playVideo();
-        showPill(pill, true);
+        waitingForSound.add(player);
       }
     }, 1200);
   }
 
-  function showPill(pill, on) { if (pill) pill.hidden = !on; }
-
-  // Wire a "Tap for sound" button to a player getter.
-  function wirePill(pill, getPlayer) {
-    if (!pill) return;
-    pill.addEventListener("click", () => {
-      const p = getPlayer();
-      if (!p) return;
-      p.unMute();
-      p.setVolume(100);
+  // The visitor's first real interaction unlocks sound for every waiting player.
+  function onFirstInteraction(e) {
+    interacted = true;
+    waitingForSound.forEach(p => {
+      soundOn(p);
       if (p.getPlayerState() !== PLAYING) p.playVideo();
-      showPill(pill, false);
     });
+    listeners.forEach(fn => fn(e));
   }
+  const listeners = [];
+  // Only a real tap/click/keypress counts (a scroll or swipe doesn't unlock sound).
+  const UNLOCK = ["pointerup", "touchend", "click", "keydown"];
+  function tryUnlock(e) {
+    if (interacted) return;
+    const active = navigator.userActivation ? navigator.userActivation.isActive : true;
+    if (!active) return;
+    UNLOCK.forEach(t => document.removeEventListener(t, tryUnlock, true));
+    onFirstInteraction(e);
+  }
+  UNLOCK.forEach(t => document.addEventListener(t, tryUnlock, true));
 
-  return { load, create, play, wirePill, showPill, PLAYING, BUFFERING };
+  return {
+    load, create, play, soundOn,
+    onFirstInteraction: fn => listeners.push(fn),
+    hasInteracted: () => interacted,
+    PLAYING, BUFFERING
+  };
 })();

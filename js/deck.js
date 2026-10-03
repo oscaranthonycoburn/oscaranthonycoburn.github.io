@@ -39,7 +39,7 @@
     $("#nowMeta").textContent = `Track ${pad(i + 1)} of ${pad(N)} · ${t.length}`;
     $("#nowState").textContent =
       preview !== null && preview !== idx ? "Let go to play" :
-      playing ? (yt && yt.isMuted && yt.isMuted() ? "Playing · sound off" : "Now playing") :
+      playing ? "Now playing" :
       ytReady && deck.classList.contains("has-video") ? "Paused" : "Spin to play";
     $$("#nowList button").forEach(b => {
       const on = +b.dataset.deck === i;
@@ -55,7 +55,6 @@
   /* ---------- YouTube player ---------- */
   // The deck starts playing by itself (muted, as browsers require) when it scrolls into
   // view. The first time the visitor touches it, the deck switches to normal play with sound.
-  const pill = $("#deckSound");
   let autoMode = !reduced;
   let inView = false;
   let pausedByUs = false, retries = 0;
@@ -70,8 +69,16 @@
       });
     })));
   }
-  OCYT.wirePill(pill, () => yt);
-  pill.addEventListener("click", () => { autoMode = false; render(); });
+  // The visitor's first tap/click anywhere starts the record with sound (unless they
+  // tapped something that plays music itself), and it keeps going from there.
+  OCYT.onFirstInteraction(e => {
+    const t = e && e.target;
+    if (reduced || listPlayerOpen() || (t && t.closest && t.closest("[data-play], #player, #deck"))) return;
+    autoMode = false;
+    deck.classList.add("has-video");
+    if (ytReady) { if (!playing) OCYT.play(yt); }
+    else ensurePlayer().then(() => { if (!playing && !listPlayerOpen()) OCYT.play(yt); });
+  });
 
   function onState(e) {
     const st = e.data;
@@ -85,7 +92,7 @@
       if (autoMode) {
         idx = wrap(idx + 1); render();
         yt.loadVideoById(tracks[idx].id);
-        OCYT.play(yt, pill, { muted: true });
+        OCYT.play(yt, { muted: true });
       } else select(idx + 1, true);
       return;
     } else if (st !== YT.PlayerState.BUFFERING) {
@@ -95,7 +102,7 @@
       if (st === YT.PlayerState.PAUSED && autoMode && inView && !pausedByUs && retries < 3 &&
           document.visibilityState === "visible") {
         retries++;
-        setTimeout(() => { if (autoMode && inView && !playing) OCYT.play(yt, pill, { muted: true }); }, 500);
+        setTimeout(() => { if (autoMode && inView && !playing) OCYT.play(yt, { muted: true }); }, 500);
       }
     }
     if (st === YT.PlayerState.PLAYING) retries = 0;
@@ -114,15 +121,12 @@
       if (!autoMode || !inView || playing || listPlayerOpen()) return;
       deck.classList.add("has-video");
       pausedByUs = false;
-      OCYT.play(yt, pill, { muted: true });
+      OCYT.play(yt, { muted: true });
     });
   }
   if ("IntersectionObserver" in window) {
     // Load the player a little before the deck is reached so it's ready instantly.
-    const early = new IntersectionObserver(es => {
-      if (es.some(e => e.isIntersecting)) { ensurePlayer(); early.disconnect(); }
-    }, { rootMargin: "600px 0px" });
-    early.observe(deck);
+    ensurePlayer();   // ready before the first tap, so it can start with sound
     // Auto-play while on screen; pause muted auto-play when scrolled away.
     new IntersectionObserver(es => {
       inView = es.some(e => e.isIntersecting);
@@ -134,7 +138,7 @@
   function play(i) {
     autoMode = false;   // a deliberate choice: play with sound
     deck.classList.add("has-video");
-    const go = () => { yt.loadVideoById(tracks[i].id); OCYT.play(yt, pill); };
+    const go = () => { yt.loadVideoById(tracks[i].id); OCYT.play(yt); };
     ytReady ? go() : ensurePlayer().then(go);
   }
   function select(i, autoplay) {
@@ -149,14 +153,13 @@
     if (!ytReady) { play(idx); return; }
     if (autoMode && playing) {          // first tap on a muted auto-play: turn the sound on
       autoMode = false;
-      yt.unMute(); yt.setVolume(100);
-      OCYT.showPill(pill, false);
+      OCYT.soundOn(yt);
       render();
       return;
     }
     autoMode = false;
     if (playing) yt.pauseVideo();
-    else if (deck.classList.contains("has-video")) OCYT.play(yt, pill);
+    else if (deck.classList.contains("has-video")) OCYT.play(yt);
     else play(idx);
   }
   // Pause when the tracklist player starts.

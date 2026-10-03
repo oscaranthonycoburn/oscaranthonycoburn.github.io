@@ -439,15 +439,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .player-video { position: relative; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: #000; }
 .player-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .player-frame { position: absolute; inset: 0; }
-.sound-pill {
-  position: absolute; left: 12px; bottom: 12px; z-index: 3;
-  display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 0; border-radius: 999px;
-  background: var(--red); color: var(--cream); font-size: 13px; font-weight: 600;
-  box-shadow: 0 8px 24px -6px rgba(0,0,0,.7); animation: pill-pulse 2s ease-in-out infinite;
-}
-.sound-pill[hidden] { display: none; }
-.sound-pill svg { width: 16px; height: 16px; fill: currentColor; }
-@keyframes pill-pulse { 50% { box-shadow: 0 8px 24px -6px rgba(0,0,0,.7), 0 0 0 6px color-mix(in srgb, var(--red) 25%, transparent); } }
 .player-nav { display: flex; justify-content: space-between; margin-top: 14px; }
 
 /* ---------- Toast ---------- */
