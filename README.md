@@ -38,7 +38,7 @@ When a new News post goes live, everyone on the site gets sirens (several differ
 - Post times come from the "Date & time posted" field in Pages CMS, written in Arizona time (`alarm.timezone`).
 - Browsers allow sound only after the visitor has clicked/tapped the page; otherwise the sirens start at their first tap. Volume tops out at the visitor's device volume.
 - Flash safety: the glow pulses ~2×/s and the beams rotate rather than strobe (under the 3 flashes/s seizure limit); "Reduce motion" users get a still red screen. Visitors can hit Silence.
-- Preview it any time with `?alarmtest` at the end of the address. Turn it off with `alarm.enabled: false` in `js/data.js`.
+- It only fires for real new posts. Turn it off with `alarm.enabled: false` in `js/data.js`.
 
 ## Ask Oscar (contact form)
 The "Ask Oscar" section on Home (`#contact`) lets anyone send Oscar a message. His address is stored split up in `contact` in `js/data.js`, so it never appears whole in the page (keeps spam bots away).

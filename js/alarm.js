@@ -209,13 +209,8 @@
   let timer = setInterval(() => { if (!document.hidden) check(); }, POLL);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) check(); });
 
-  // Preview the alarm without posting: open the site with ?alarmtest at the end of the address.
-  if (/[?&]alarmtest\b/.test(location.search)) setTimeout(() => start({ title: "This is what a new post looks like" }, WINDOW), 1200);
-
-  // For testing: OCAlarm.test() runs the full alarm for 30s without a real post.
+  // Read-only status (no way to trigger it without a real post).
   window.OCAlarm = {
-    test: (s = 30) => start({ title: "Test alarm" }, s * 1000),
-    check,
     get running() { return running; },
     get soundOn() { return !!soundCtx && soundCtx.state === "running"; }
   };
