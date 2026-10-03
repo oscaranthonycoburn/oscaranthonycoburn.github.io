@@ -38,11 +38,12 @@
   <div class="grain" aria-hidden="true"></div>
 
   <header class="nav">
-    <a href="#home" class="nav-logo" data-go="home">Oscar A. Coburn</a>
+    <a href="#home" class="nav-logo" data-go="home" aria-label="Oscar A. Coburn, home"><span class="logo-full">Oscar A. Coburn</span><span class="logo-short" aria-hidden="true">OAC</span></a>
     <nav class="nav-pages" aria-label="Pages">
       <span class="nav-pill" aria-hidden="true"></span>
       <a href="#home" data-go="home" aria-current="page">Home</a>
       <a href="#library" data-go="library">Library</a>
+      <a href="#news" data-go="news">News</a>
     </nav>
     <nav class="nav-links" aria-label="Sections">
       <a href="#tracks" data-scroll>Tracks</a>
@@ -221,6 +222,17 @@
         <p class="library-intro">Every release from Oscar A. Coburn. Tap an album to listen on Spotify.</p>
       </div>
       <ol class="library-grid" id="libraryGrid"></ol>
+    </section>
+  </main>
+
+  <main id="news" data-view="news" hidden>
+    <section class="section news">
+      <div class="section-head news-head">
+        <p class="kicker">Updates</p>
+        <h1 class="section-title">News</h1>
+        <p class="library-intro">The latest from Oscar A. Coburn: new music, shows and everything in between.</p>
+      </div>
+      <div class="news-board" id="newsBoard" aria-live="polite"></div>
     </section>
   </main>
 

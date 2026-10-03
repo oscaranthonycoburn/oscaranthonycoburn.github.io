@@ -52,6 +52,49 @@
     $("#libraryGrid").innerHTML = filled.concat(empty).join("");
   })();
 
+  /* ---------- News board (posts live in content/news.json) ---------- */
+  (function renderNews() {
+    const board = $("#newsBoard");
+    if (!board) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const fmtDate = d => {
+      const [y, m, day] = (d || "").split("-").map(Number);
+      return y ? new Date(y, m - 1, day).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "";
+    };
+    const safeUrl = u => /^(https?:\/\/|assets\/|\.\/|\/)/i.test(u || "") ? u : "";
+    const paras = t => String(t || "").split(/\n\s*\n/).map(p => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`).join("");
+    const empty = `<div class="news-empty"><p class="kicker">Nothing posted yet</p><p>Check back soon for news from Oscar.</p></div>`;
+
+    fetch("content/news.json", { cache: "no-cache" })
+      .then(r => r.ok ? r.json() : { posts: [] })
+      .catch(() => ({ posts: [] }))
+      .then(data => {
+        const posts = (data.posts || [])
+          .filter(p => p && p.title && !p.hidden && !(p.hideAfter && p.hideAfter < today))   // gone after its end date
+          .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || String(b.date).localeCompare(String(a.date)));
+        board.innerHTML = posts.length ? posts.map((p, i) => {
+          const img = safeUrl(p.image), link = safeUrl(p.link);
+          return `
+          <article class="news-card${i === 0 ? " is-lead" : ""}">
+            ${img ? `<div class="news-media"><img src="${esc(img)}" alt="" loading="lazy"></div>` : ""}
+            <div class="news-body">
+              <p class="news-meta">${p.pinned ? `<span class="news-pin">Pinned</span>` : ""}<time datetime="${esc(p.date || "")}">${esc(fmtDate(p.date))}</time></p>
+              <h2 class="news-title">${esc(p.title)}</h2>
+              <div class="news-text">${paras(p.body)}</div>
+              ${link ? `<a class="news-link" href="${esc(link)}" target="_blank" rel="noopener">${esc(p.linkLabel || "Read more")} <span aria-hidden="true">↗</span></a>` : ""}
+            </div>
+          </article>`;
+        }).join("") : empty;
+        if (window.ScrollTrigger && window.gsap && !reduced) {
+          $$(".news-card", board).forEach(el => gsap.from(el, {
+            y: 24, opacity: 0, duration: 1, ease: "expo.out", clearProps: "transform,opacity",
+            scrollTrigger: { trigger: el, start: "top 92%" }
+          }));
+          ScrollTrigger.refresh();
+        }
+      });
+  })();
+
   /* ---------- "Listen on" chooser: clicking an album lets you pick Spotify or Apple Music ---------- */
   const listen = $("#listen");
   function openListen(i) {
@@ -120,7 +163,7 @@
   $$("[data-listen]").forEach(b => b.addEventListener("click", () => { if (deckApi() && !deckApi().playing) deckApi().play(); }));
 
   /* ---------- Views: Home and Library live in one page so the music never stops ---------- */
-  const TITLES = { home: "I Ain't Perfect · Oscar A. Coburn", library: "Library · Oscar A. Coburn" };
+  const TITLES = { home: "I Ain't Perfect · Oscar A. Coburn", library: "Library · Oscar A. Coburn", news: "News · Oscar A. Coburn" };
   let lenis = null;
   let currentView = "home";
   const pill = $(".nav-pill");
@@ -170,15 +213,15 @@
   }
   function route({ animate = false } = {}) {
     const h = location.hash.slice(1);
-    const name = h === "library" ? "library" : "home";
-    animate ? switchView(name) : showView(name, { scroll: name === "library" });
+    const name = TITLES[h] && h !== "home" ? h : "home";
+    animate ? switchView(name) : showView(name, { scroll: name !== "home" });
     const target = name === "home" && h && h !== "home" && document.getElementById(h);
     if (target) setTimeout(() => goTo(target), animate ? 650 : 50);
   }
   $$("[data-go]").forEach(a => a.addEventListener("click", e => {
     e.preventDefault();
     const name = a.dataset.go;
-    if (name !== currentView) history.pushState(null, "", name === "library" ? "#library" : location.pathname + location.search);
+    if (name !== currentView) history.pushState(null, "", name === "home" ? location.pathname + location.search : "#" + name);
     switchView(name);
   }));
   addEventListener("popstate", () => route({ animate: true }));

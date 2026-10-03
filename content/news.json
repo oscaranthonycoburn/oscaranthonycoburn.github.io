@@ -1,0 +1,14 @@
+{
+  "posts": [
+    {
+      "title": "I Ain't Perfect is out now",
+      "date": "2026-10-02",
+      "body": "The debut EP from Oscar A. Coburn is here. Five songs, 16 minutes. Stream it on Spotify or Apple Music, or spin the record on the home page.",
+      "image": "assets/cover.jpg",
+      "link": "https://open.spotify.com/album/3oG4AVbBcS29V9o9uxxFZU",
+      "linkLabel": "Listen on Spotify",
+      "pinned": true,
+      "hideAfter": ""
+    }
+  ]
+}

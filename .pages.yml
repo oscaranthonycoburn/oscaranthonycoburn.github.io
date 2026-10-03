@@ -1,0 +1,48 @@
+# Pages CMS (https://pagescms.org) — a form-based editor for the News board.
+# Sign in at https://app.pagescms.org with GitHub; only people with write access to
+# this repo (members of the oscaranthonycoburn org) can open it and post.
+media:
+  input: assets/news
+  output: /assets/news
+
+content:
+  - name: news
+    label: News board
+    type: file
+    path: content/news.json
+    format: json
+    fields:
+      - name: posts
+        label: Posts
+        type: object
+        list: true
+        fields:
+          - name: title
+            label: Title
+            type: string
+            required: true
+          - name: date
+            label: Date
+            type: date
+          - name: body
+            label: Text
+            type: text
+            description: Leave a blank line between paragraphs.
+          - name: image
+            label: Image (optional)
+            type: image
+          - name: link
+            label: Link (optional)
+            type: string
+            description: A full web address, e.g. a ticket page or a new video.
+          - name: linkLabel
+            label: Link button text
+            type: string
+            description: e.g. "Get tickets" or "Watch now". Defaults to "Read more".
+          - name: pinned
+            label: Pin to the top
+            type: boolean
+          - name: hideAfter
+            label: Hide after (optional)
+            type: date
+            description: The post disappears on its own after this date. Leave empty to keep it up until you delete it.
