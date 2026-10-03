@@ -28,7 +28,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; scrollbar-gutter: stable; }   /* no sideways shift when page height changes */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
@@ -93,7 +93,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .nav-logo { font-family: var(--display); font-size: clamp(18px, 5vw, 22px); white-space: nowrap; letter-spacing: .04em; color: var(--cream); padding-top: 2px; }
 .nav-pages {
-  display: flex; gap: 2px; padding: 3px; margin-left: auto; border-radius: 999px;
+  position: relative; display: flex; gap: 2px; padding: 3px; margin-left: auto; border-radius: 999px;
   background: color-mix(in srgb, var(--cream) 6%, transparent); border: 1px solid var(--line);
 }
 .nav-pages a {
@@ -101,8 +101,15 @@ button { font: inherit; color: inherit; cursor: pointer; }
   color: var(--muted); transition: color .25s, background .25s;
 }
 .nav-pages a:hover { color: var(--cream); }
-.nav-pages a[aria-current="page"] { background: var(--red); color: var(--cream); }
-.nav-links.is-hidden { display: none !important; }
+.nav-pages a { position: relative; z-index: 1; }
+.nav-pages a[aria-current="page"] { color: var(--cream); }
+/* the red highlight slides between Home and Library */
+.nav-pill {
+  position: absolute; top: 3px; bottom: 3px; left: 0; width: 0; z-index: 0; border-radius: 999px;
+  background: var(--red); box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--red) 70%, transparent);
+  transition: transform .45s var(--ease), width .45s var(--ease);
+}
+.nav-pill.no-anim { transition: none; }
 .nav-links { display: none; gap: 2px; margin-left: auto; }
 .nav-links a { padding: 8px 14px; border-radius: 999px; font-size: 14px; color: var(--muted); transition: color .3s, background .3s; }
 .nav-links a:hover { color: var(--cream); background: var(--glass); }

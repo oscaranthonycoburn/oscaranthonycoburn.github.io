@@ -116,7 +116,9 @@
   });
   $("[data-mini-toggle]").addEventListener("click", () => A.toggle());
   $("[data-mini-next]").addEventListener("click", () => A.next());
-  $("[data-mini-open]").addEventListener("click", () => { showView("home", { scroll: false }); goTo($("#spin")); });
+  $("[data-mini-open]").addEventListener("click", () => {
+    goTo($("#spin"));
+  });
   if ("IntersectionObserver" in window) {
     new IntersectionObserver(es => { deckVisible = es.some(e => e.isIntersecting); renderMini(); }, { threshold: 0.25 })
       .observe($("#deck"));
@@ -125,32 +127,68 @@
   /* ---------- Views: Home and Library live in one page so the music never stops ---------- */
   const TITLES = { home: "I Ain't Perfect · Oscar A. Coburn", library: "Library · Oscar A. Coburn" };
   let lenis = null;
-  function showView(name, { scroll = true } = {}) {
-    $$("[data-view]").forEach(v => { v.hidden = v.dataset.view !== name; });
+  let currentView = "home";
+  const pill = $(".nav-pill");
+
+  function markTab(name, animate = true) {
     $$(".nav-pages [data-go]").forEach(a => {
       if (a.dataset.go === name) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
-    $(".nav-links").classList.toggle("is-hidden", name !== "home");
+    const a = $(`.nav-pages [data-go="${name}"]`);
+    if (!a || !pill) return;
+    pill.classList.toggle("no-anim", !animate);
+    pill.style.width = a.offsetWidth + "px";
+    pill.style.transform = `translateX(${a.offsetLeft}px)`;
+  }
+  // Re-measure (without sliding) once fonts load and when the window resizes.
+  if (document.fonts) document.fonts.ready.then(() => markTab(currentView, false));
+  addEventListener("resize", () => markTab(currentView, false));
+
+  function showView(name, { scroll = true } = {}) {
+    currentView = name;
+    $$("[data-view]").forEach(v => { v.hidden = v.dataset.view !== name; });
+    markTab(name);
     document.title = TITLES[name];
     if (scroll) { lenis ? lenis.scrollTo(0, { immediate: true }) : window.scrollTo(0, 0); }
     if (window.ScrollTrigger) ScrollTrigger.refresh();
     renderMini();
   }
-  function route() {
+  // Smooth switch: the tab highlight slides right away while the page content
+  // fades out, swaps (and jumps to the top while invisible), then fades back in.
+  let switching = null;
+  function switchView(name) {
+    if (name === currentView) { lenis ? lenis.scrollTo(0) : window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+    if (!window.gsap || reduced) return showView(name);
+    markTab(name);
+    const outgoing = [$(`[data-view="${currentView}"]`), $(".footer")];
+    if (switching) switching.kill();
+    switching = gsap.to(outgoing, {
+      opacity: 0, y: 8, duration: .18, ease: "power2.in",
+      onComplete: () => {
+        gsap.set(outgoing, { clearProps: "opacity,transform" });
+        showView(name);
+        switching = gsap.fromTo([$(`[data-view="${name}"]`), $(".footer")],
+          { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, duration: .4, ease: "power3.out", clearProps: "opacity,transform" });
+      }
+    });
+  }
+  function route({ animate = false } = {}) {
     const h = location.hash.slice(1);
-    if (h === "library") return showView("library");
-    showView("home", { scroll: false });
-    const target = h && h !== "home" && document.getElementById(h);
-    if (target) setTimeout(() => goTo(target), 50);
+    const name = h === "library" ? "library" : "home";
+    animate ? switchView(name) : showView(name, { scroll: name === "library" });
+    const target = name === "home" && h && h !== "home" && document.getElementById(h);
+    if (target) setTimeout(() => goTo(target), animate ? 650 : 50);
   }
   $$("[data-go]").forEach(a => a.addEventListener("click", e => {
     e.preventDefault();
     const name = a.dataset.go;
-    history.pushState(null, "", name === "library" ? "#library" : location.pathname + location.search);
-    showView(name);
+    if (name !== currentView) history.pushState(null, "", name === "library" ? "#library" : location.pathname + location.search);
+    switchView(name);
   }));
-  addEventListener("popstate", route);
+  addEventListener("popstate", () => route({ animate: true }));
+  markTab(currentView, false);
 
   /* ---------- Share ---------- */
   const toast = $("#toast");
@@ -173,7 +211,12 @@
 
   /* ---------- Smooth anchor scrolling ---------- */
   function goTo(target) {
-    if ($("#top").hidden && $("#top").contains(target)) showView("home", { scroll: false });
+    // From the Library, fade back to Home first, then glide to the section.
+    if ($("#top").hidden && $("#top").contains(target)) {
+      history.pushState(null, "", location.pathname + location.search);
+      switchView("home");
+      return setTimeout(() => goTo(target), window.gsap && !reduced ? 650 : 0);
+    }
     if (lenis) lenis.scrollTo(target, { offset: -96, duration: 1.4 });
     else target.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
   }
