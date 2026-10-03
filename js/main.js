@@ -28,16 +28,17 @@
   (function renderLibrary() {
     const releases = S.library || [];
     const slots = Math.max(S.librarySlots || 6, Math.ceil(releases.length / 3) * 3);
-    const urlFor = r => (r.url === "spotify" || !r.url) ? S.links.spotify : r.url;
+    const urlFor = r => r.spotify || S.links.spotify;
     const plus = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`;
     const spotifyIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5a10.5 10.5 0 1 0 0 21 10.5 10.5 0 0 0 0-21zm4.8 15.2a.65.65 0 0 1-.9.2c-2.5-1.5-5.6-1.8-9.3-1a.65.65 0 1 1-.3-1.3c4-.9 7.5-.5 10.3 1.2.3.2.4.6.2.9zm1.3-2.9a.8.8 0 0 1-1.1.3c-2.8-1.7-7.2-2.2-10.5-1.2a.8.8 0 1 1-.5-1.6c3.8-1.1 8.6-.6 11.8 1.4.4.2.5.7.3 1.1zm.1-3c-3.4-2-9-2.2-12.2-1.2a1 1 0 1 1-.6-1.9c3.7-1.1 9.9-.9 13.8 1.4a1 1 0 0 1-1 1.7z"/></svg>`;
-    const filled = releases.map(r => `
+    const appleIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 2.6v12.9a3 3 0 1 1-1.8-2.75V7.3l-8 1.9v8.6a3 3 0 1 1-1.8-2.75V5.6z"/></svg>`;
+    const filled = releases.map((r, i) => `
       <li class="release" data-fade>
-        <a class="release-link" href="${esc(urlFor(r))}" target="_blank" rel="noopener"
-           aria-label="${esc(r.title)} (${esc(r.type)}, ${esc(r.year)}): listen on Spotify">
+        <a class="release-link" href="${esc(urlFor(r))}" target="_blank" rel="noopener" data-listen-on="${i}"
+           aria-label="${esc(r.title)} (${esc(r.type)}, ${esc(r.year)}): listen on Spotify or Apple Music">
           <span class="release-art">
             <img src="${esc(r.cover)}" alt="" loading="lazy">
-            <span class="release-badge">${spotifyIcon} Listen</span>
+            <span class="release-badge"><span class="svc svc-spotify">${spotifyIcon}</span><span class="svc svc-apple">${appleIcon}</span> Listen</span>
           </span>
           <span class="release-title">${esc(r.title)}</span>
           <span class="release-meta">${esc(r.type)} · ${esc(r.year)}${r.songs ? ` · ${r.songs} songs` : ""}</span>
@@ -51,6 +52,30 @@
       </li>`);
     $("#libraryGrid").innerHTML = filled.concat(empty).join("");
   })();
+
+  /* ---------- "Listen on" chooser: clicking an album lets you pick Spotify or Apple Music ---------- */
+  const listen = $("#listen");
+  function openListen(i) {
+    const r = (S.library || [])[i] || { title: S.title, type: S.format, year: "2026", songs: S.tracks.length, cover: S.cover };
+    $("#listenArt").src = r.cover;
+    $("#listenTitle").textContent = r.title;
+    $("#listenMeta").textContent = `${r.type} · ${r.year}${r.songs ? ` · ${r.songs} songs` : ""} · ${S.credit}`;
+    $("#listenSpotify").href = r.spotify || S.links.spotify;
+    $("#listenApple").href = r.appleMusic || S.links.appleMusic;
+    if (!listen.open) listen.showModal();
+    lenis && lenis.stop();
+    if (window.gsap && !reduced) gsap.fromTo(".listen-panel", { y: 24, opacity: 0, scale: .97 }, { y: 0, opacity: 1, scale: 1, duration: .45, ease: "expo.out" });
+  }
+  document.addEventListener("click", e => {
+    const a = e.target.closest("[data-listen-on]");
+    if (!a || !listen || !listen.showModal) return;   // no dialog support: the link just opens Spotify
+    e.preventDefault();
+    openListen(+a.dataset.listenOn || 0);
+  });
+  listen.addEventListener("close", () => { lenis && lenis.start(); });
+  listen.addEventListener("click", e => { if (e.target === listen) listen.close(); });   // tap outside
+  $("[data-listen-close]").addEventListener("click", () => listen.close());
+  $$(".listen-btn").forEach(b => b.addEventListener("click", () => setTimeout(() => listen.close(), 150)));
 
   /* ---------- Tracklist: tapping a song plays it as the background music ---------- */
   const tracks = S.tracks.map((t, i) => ({ ...t, i }));

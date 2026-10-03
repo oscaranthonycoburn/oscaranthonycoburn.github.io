@@ -27,15 +27,17 @@ window.SITE = {
     instagram: "https://www.instagram.com/oscar_c0burn/",
     playlist:  "https://www.youtube.com/playlist?list=PLdRANicuQT_E",
     // TODO: swap for the exact album link (Spotify → ••• → Share → Copy link to album).
-    spotify:   "https://open.spotify.com/search/Oscar%20Coburn%20I%20Ain%27t%20Perfect"
+    spotify:   "https://open.spotify.com/search/Oscar%20Coburn%20I%20Ain%27t%20Perfect",
+    // TODO: swap for the exact album link (Apple Music → ••• → Share → Copy Link).
+    appleMusic: "https://music.apple.com/us/search?term=Oscar%20Coburn%20I%20Ain%27t%20Perfect"
   },
 
   // Library page: every release, newest first. Empty "+" slots fill the rest of the grid
   // (at least `librarySlots`, rounded up to a full row of 3). To add an album, copy the
   // entry below, change it, and drop its cover in assets/.
   library: [
-    { title: "I Ain't Perfect", type: "EP", year: "2026", songs: 5,
-      cover: "assets/cover.jpg", url: "spotify" }   // "spotify" = use links.spotify; or paste any URL
+    { title: "I Ain't Perfect", type: "EP", year: "2026", songs: 5, cover: "assets/cover.jpg",
+      spotify: "", appleMusic: "" }   // leave "" to use links.spotify / links.appleMusic, or paste this album's own links
   ],
   librarySlots: 6,
 

@@ -138,13 +138,22 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .btn-red:hover { box-shadow: 0 14px 44px -8px color-mix(in srgb, var(--red) 90%, transparent), 0 0 0 4px color-mix(in srgb, var(--orange) 25%, transparent); }
 .btn-ghost:hover { background: var(--glass-hi); }
-.btn-spotify {
+:root { --spotify: #1ed760; --apple: #fa2d48; }
+.btn-stream, .btn-spotify {
   color: var(--cream); border: 1px solid var(--line);
   background: linear-gradient(140deg, var(--glass-hi), var(--glass) 60%);
   -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
 }
-.btn-spotify svg { width: 20px; height: 20px; fill: #1ed760; }
-.btn-spotify:hover { background: var(--glass-hi); box-shadow: 0 10px 30px -12px rgba(30, 215, 96, .45); }
+.btn-stream svg { width: 20px; height: 20px; }
+.btn-spotify svg { fill: var(--spotify); }
+.btn-apple svg { fill: var(--apple); }
+.btn-stream:hover { background: var(--glass-hi); }
+.btn-spotify:hover { box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--spotify) 50%, transparent); }
+.btn-apple:hover { box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--apple) 50%, transparent); }
+.svc { display: inline-flex; }
+.svc-spotify svg { fill: var(--spotify); }
+.svc-apple svg { fill: var(--apple); }
+.svc + .svc { margin-left: -2px; }
 .btn-sm { min-height: 42px; padding: 0 18px; font-size: 18px; }
 
 /* ---------- Hero ---------- */
@@ -177,7 +186,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   background: color-mix(in srgb, var(--bg) 70%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   transition: opacity .35s, transform .35s var(--ease);
 }
-.cover-badge svg { width: 18px; height: 18px; fill: #1ed760; }
+.cover-badge svg { width: 18px; height: 18px; }
 .cover-link:hover .cover-badge, .cover-link:focus-visible .cover-badge { opacity: 1; transform: translate(-50%, 0); }
 @media (hover: none) { .cover-badge { opacity: 1; transform: translate(-50%, 0); } }
 
@@ -394,7 +403,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   padding: 6px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--cream);
   background: color-mix(in srgb, var(--bg) 72%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
 }
-.release-badge svg { width: 15px; height: 15px; fill: #1ed760; }
+.release-badge svg { width: 15px; height: 15px; }
 .release-title { font-family: var(--display); font-size: 24px; line-height: 1; letter-spacing: .03em; color: var(--cream); }
 .release-meta { font-size: 13px; color: var(--muted); }
 .is-empty .release-art {
@@ -418,7 +427,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
   box-shadow: 0 18px 40px -16px color-mix(in srgb, var(--red) 70%, transparent);
 }
 .follow-btn > svg { width: 32px; height: 32px; flex: none; fill: var(--red); }
-.follow-btn[data-link="spotify"] > svg { fill: #1ed760; }
+.follow-btn[data-link="spotify"] > svg { fill: var(--spotify); }
+.follow-btn[data-link="appleMusic"] > svg { fill: var(--apple); }
 .follow-btn span { flex: 1; display: flex; flex-direction: column; }
 .follow-btn strong { font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1.05; letter-spacing: .03em; }
 .follow-btn small { color: var(--muted); font-size: 13px; }
@@ -472,6 +482,38 @@ button { font: inherit; color: inherit; cursor: pointer; }
 body.has-mini .footer { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
 body.has-mini .toast { bottom: calc(90px + env(safe-area-inset-bottom)); }
 
+/* ---------- "Listen on" chooser ---------- */
+.listen {
+  width: min(100% - 2 * var(--gutter), 420px); max-width: none; margin: auto; padding: 0; border: 0;
+  background: transparent; color: var(--cream); overflow: visible;
+}
+.listen::backdrop { background: rgba(8, 5, 3, .72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.listen-panel {
+  position: relative; display: grid; gap: var(--space-tight); padding: 20px; border-radius: 24px;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--brown) 70%, var(--bg)), var(--bg));
+  border: 1px solid var(--line); box-shadow: 0 30px 80px -20px #000;
+}
+.listen-close { position: absolute; top: 12px; right: 12px; }
+.listen-head { display: flex; align-items: center; gap: 16px; padding-right: 44px; margin-bottom: 6px; }
+.listen-art { width: 84px; height: 89px; flex: none; border-radius: 6px; object-fit: cover; box-shadow: 0 12px 30px -10px #000; }
+.listen-head .kicker { margin-bottom: 4px; }
+.listen-title { margin: 0; font-family: var(--cover-font); font-weight: 900; font-stretch: 68%; text-transform: uppercase; font-size: 30px; line-height: .95; color: var(--red); }
+.listen-meta { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+.listen-btn {
+  display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 16px;
+  border: 1px solid var(--line); background: var(--glass);
+  font-family: var(--display); font-size: 24px; letter-spacing: .04em;
+  transition: transform .3s var(--ease), background .3s, border-color .3s, box-shadow .3s;
+}
+.listen-btn svg { width: 28px; height: 28px; flex: none; }
+.listen-btn span { flex: 1; }
+.listen-btn i { font-style: normal; font-size: 20px; color: var(--muted); }
+.listen-spotify svg { fill: var(--spotify); }
+.listen-apple svg { fill: var(--apple); }
+.listen-btn:hover, .listen-btn:focus-visible { transform: translateY(-2px); background: var(--glass-hi); }
+.listen-spotify:hover { border-color: color-mix(in srgb, var(--spotify) 60%, transparent); box-shadow: 0 12px 30px -14px color-mix(in srgb, var(--spotify) 60%, transparent); }
+.listen-apple:hover { border-color: color-mix(in srgb, var(--apple) 60%, transparent); box-shadow: 0 12px 30px -14px color-mix(in srgb, var(--apple) 60%, transparent); }
+
 /* ---------- Toast ---------- */
 .toast {
   position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 100;
@@ -502,7 +544,7 @@ body.has-mini .toast { bottom: calc(90px + env(safe-area-inset-bottom)); }
   .hero-copy { flex: 1; min-width: 0; }
   .cover-wrap { width: min(40vw, 460px); flex: none; }
   .hero-ctas { justify-content: flex-start; }
-  .follow-grid { grid-template-columns: repeat(5, 1fr); }
+  .follow-grid { grid-template-columns: repeat(3, 1fr); }
   .follow-grid > :last-child:nth-child(odd) { grid-column: auto; }
   .deck { grid-template-columns: 1.15fr 1fr; gap: 40px; }
   .artist-grid { grid-template-columns: 1fr 1.1fr; gap: 40px; align-items: start; }

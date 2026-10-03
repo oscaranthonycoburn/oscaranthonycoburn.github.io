@@ -22,7 +22,7 @@ Song files go in `assets/audio/` with the names set in `tracks[].audio` in `js/d
 ## Pages
 Home and Library are both in `index.html`, so switching between them never stops the music. `#library` opens the Library; `library.html` just redirects there for old links.
 - To add an album, copy the entry in `library` in `js/data.js`, change it, and put its cover in `assets/`. Empty "+" slots fill the rest (at least `librarySlots`, rounded up to a full row of 3).
-- `links.spotify` in `js/data.js` is used by the library album, the hero cover, the hero Spotify button and the Follow card. It's currently a Spotify search; replace it with the exact album link.
+- Clicking an album (hero cover or Library) opens a "Listen on" chooser with Spotify and Apple Music. `links.spotify` and `links.appleMusic` in `js/data.js` are the defaults (also used by the hero buttons and Follow cards); a library entry can set its own `spotify` / `appleMusic`. Both are currently search links; replace them with the exact album links.
 
 ## Deploy
 Hosted free on GitHub Pages from the `oscaranthonycoburn/oscaranthonycoburn.github.io` repo (branch `main`, root), live at https://oscaranthonycoburn.github.io/. Pushing to `main` republishes in about a minute.
