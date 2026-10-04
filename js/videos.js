@@ -1,11 +1,11 @@
 /* Videos tab: the room photo (assets/vhs/room.webp) fills the tab.
    Tap the TV: the camera zooms in until the photo's black TV bezel lands exactly on the border
    (assets/vhs/frame.webp, the same bezel), which fades in over it, so the TV *becomes* the border.
-   Inside: a grainy tape menu (VOL. 1–4). Pick one: the screen flickers and the video plays.
-   The green readout above the frame plays/pauses; the arrow goes back (video -> menu -> room).
-   Tapes = `videos` in js/data.js. */
+   Inside: a grainy menu of video titles. Pick one: the screen flickers and the video plays; when it
+   ends it goes back to the menu. The green readout above the frame plays/pauses; the arrow goes
+   back (video -> menu -> room).
+   The list is content/videos.json (edited in Pages CMS, "Videos (TV)"): title + YouTube link. */
 (function () {
-  const S = window.SITE;
   const $ = (sel, root = document) => root.querySelector(sel);
   const stage = $("#vhsStage");
   if (!stage || !window.OCYT) return;
@@ -18,14 +18,44 @@
   const hasGsap = !!window.gsap && !reduced;
   const BG = window.OCBg || { duck() {}, unduck() {} };
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const videos = S.videos || [];
+  let videos = [];
 
   // The photo's black TV bezel, measured in pixels of the 1733x907 photo. The .vhs-frame box is
   // this bezel's shape, and the border image fills it.
   const BEZEL = { l: 530 / 1733, t: 216 / 907, w: 565 / 1733, h: 408 / 907 };
 
-  list.innerHTML = videos.map((v, i) =>
-    `<li><button class="vhs-item" data-i="${i}" aria-label="${esc(v.label)}: ${esc(v.title)}"><i aria-hidden="true"></i>${esc(v.label)}</button></li>`).join("");
+  /* ---------- The menu list (content/videos.json) ---------- */
+  // Any YouTube link (watch?v=, youtu.be/, /shorts/, /embed/, /live/) or a bare 11-character ID.
+  function ytId(link) {
+    const s = String(link || "").trim();
+    if (/^[\w-]{11}$/.test(s)) return s;
+    const m = s.match(/(?:youtu\.be\/|[?&]v=|\/(?:embed|shorts|live)\/)([\w-]{11})/);
+    return m ? m[1] : "";
+  }
+  function render() {
+    list.innerHTML = videos.length
+      ? videos.map((v, i) => `<li><button class="vhs-item" data-i="${i}" aria-label="${esc(v.title)}"><i aria-hidden="true"></i><span>${esc(v.title)}</span></button></li>`).join("")
+      : `<li class="vhs-empty">NO TAPES YET</li>`;
+    requestAnimationFrame(moreHint);
+  }
+  // the bottom of the list fades out while there are more titles below
+  function moreHint() { list.classList.toggle("is-more", list.scrollTop + list.clientHeight < list.scrollHeight - 2); }
+  list.addEventListener("scroll", moreHint, { passive: true });
+  // Loaded when the page opens and again each time the TV is turned on, so new videos show up
+  // without a reload (but never swapped out while one is playing).
+  function loadList() {
+    return fetch("content/videos.json", { cache: "no-cache" })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        const next = ((d && d.videos) || [])
+          .map(v => ({ title: String(v.title || "").trim(), id: ytId(v.video), zoom: +v.zoom || 1 }))
+          .filter(v => v.title && v.id);
+        if (current === null && JSON.stringify(next) !== JSON.stringify(videos)) { videos = next; render(); }
+      })
+      .catch(() => {});
+  }
+  render();
+  loadList();
 
   /* ---------- State ---------- */
   let on = false, busy = false, current = null, playing = false;
@@ -40,7 +70,7 @@
   function status() {   // read out to screen readers only
     if (!on) now.textContent = "";
     else if (current === null) now.textContent = "Pick a tape.";
-    else now.textContent = `${playing ? "Playing" : "Paused"}: ${videos[current].label}, ${videos[current].title}`;
+    else now.textContent = `${playing ? "Playing" : "Paused"}: ${videos[current].title}`;
   }
 
   /* ---------- Grain: faint static on the idle TV, gray grain behind the menu ---------- */
@@ -130,7 +160,7 @@
     pp.hidden = true;
     doFlicker();
     setTimeout(() => {
-      menu.hidden = false;
+      menu.hidden = false; moreHint();
       const first = list.querySelector(".vhs-item"); first && first.focus({ preventScroll: true });
     }, reduced ? 0 : 380);
   }
@@ -160,12 +190,13 @@
   function turnOn() {
     if (on || busy) return;
     on = busy = true; audio(); thunk();
+    loadList();
     glass.classList.add("is-loud"); setLed("ON");
-    player.hidden = false; menu.hidden = false; pp.hidden = true;
+    player.hidden = false; menu.hidden = false; pp.hidden = true; moreHint();
     const done = () => {
       busy = false; setLed("12:00"); status();
       const first = list.querySelector(".vhs-item"); first && first.focus({ preventScroll: true });
-      ensurePlayer(videos[0] && videos[0].id);       // warm up YouTube while they choose
+      if (videos[0]) ensurePlayer(videos[0].id);       // warm up YouTube while they choose
     };
     if (!hasGsap) { room.style.visibility = "hidden"; done(); return; }
     const z = measure();

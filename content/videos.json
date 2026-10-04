@@ -1,0 +1,24 @@
+{
+  "videos": [
+    {
+      "title": "Subhuman Nature",
+      "video": "https://www.youtube.com/watch?v=himYSGRDR0Q",
+      "zoom": 1.32
+    },
+    {
+      "title": "Dreams",
+      "video": "https://www.youtube.com/watch?v=V9bUHai0z0o",
+      "zoom": 1.32
+    },
+    {
+      "title": "Time",
+      "video": "https://www.youtube.com/watch?v=cyxLA8L8PJk",
+      "zoom": 1.32
+    },
+    {
+      "title": "I Ain't Perfect",
+      "video": "https://www.youtube.com/watch?v=Z86v2BupQ64",
+      "zoom": 1.32
+    }
+  ]
+}

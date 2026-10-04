@@ -1,4 +1,4 @@
-# Pages CMS (https://pagescms.org) — a form-based editor for the News board.
+# Pages CMS (https://pagescms.org) — form-based editors for the News board and the Videos (TV) list.
 # Sign in at https://app.pagescms.org with GitHub; only people with write access to
 # this repo (members of the oscaranthonycoburn org) can open it and post.
 media:
@@ -55,3 +55,30 @@ content:
             label: Hide after (optional)
             type: string
             description: Type a date like 2026-12-31 and the post disappears on its own after that day. Leave EMPTY to keep it up until you delete it.
+
+  - name: videos
+    label: Videos (TV)
+    type: file
+    path: content/videos.json
+    format: json
+    fields:
+      - name: videos
+        label: Videos
+        type: object
+        list: true
+        description: These are the titles on the TV menu in the Videos tab, top to bottom. Drag to reorder.
+        fields:
+          - name: title
+            label: Title
+            type: string
+            required: true
+            description: Shown on the TV menu. About 20 characters fits on one line; longer titles get cut off with "…".
+          - name: video
+            label: YouTube link
+            type: string
+            required: true
+            description: Paste the video's YouTube link, e.g. https://youtu.be/abc123 or https://www.youtube.com/watch?v=abc123 (Shorts links work too).
+          - name: zoom
+            label: Zoom (optional)
+            type: number
+            description: Leave EMPTY for normal videos. Only for videos with black bars built in (like square album-art videos), 1.32 zooms in until the picture fills the TV.

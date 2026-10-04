@@ -67,17 +67,7 @@ window.SITE = {
     { title: "I Ain't Perfect", length: "3:24", id: "Z86v2BupQ64", titleTrack: true }
   ],
 
-  // Videos tab: the four VHS tapes in the room photo (VOL. 1–4, in order). Click one and it goes
-  // into the VCR, the view zooms into the TV and the video plays. `id` is the YouTube video ID.
-  // `zoom` (optional) scales the picture up on the TV screen: these placeholders are square album-art
-  // videos with black bars built in, so they're zoomed until the picture reaches the corners.
-  // Real 16:9 videos fill the screen without it.
-  videos: [
-    { label: "VOL. 1", title: "Subhuman Nature", id: "himYSGRDR0Q", zoom: 1.32 },
-    { label: "VOL. 2", title: "Dreams",          id: "V9bUHai0z0o", zoom: 1.32 },
-    { label: "VOL. 3", title: "Time",            id: "cyxLA8L8PJk", zoom: 1.32 },
-    { label: "VOL. 4", title: "I Ain't Perfect", id: "Z86v2BupQ64", zoom: 1.32 }
-  ],
+  // Videos tab: the list on the TV lives in content/videos.json (edit it in Pages CMS, "Videos (TV)").
 
   // "Ask Oscar" contact form. The address is split so it never appears whole in the page
   // (keeps it away from spam bots). The Web3Forms key below sends messages straight to
