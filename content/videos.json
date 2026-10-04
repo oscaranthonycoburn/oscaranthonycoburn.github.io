@@ -20,5 +20,12 @@
       "video": "https://www.youtube.com/watch?v=Z86v2BupQ64",
       "zoom": 1.44
     }
+  ],
+  "secrets": [
+    {
+      "code": "4933",
+      "title": "Secret",
+      "image": "/assets/secret/4933.jpg"
+    }
   ]
 }

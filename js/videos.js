@@ -5,7 +5,9 @@
    ends it goes back to the menu. The green readout above the frame plays/pauses; the arrow goes
    back (video -> menu -> room).
    The list is content/videos.json (edited in Pages CMS, "Videos (TV)"): a title plus either a
-   YouTube link or an uploaded video file (assets/videos/, played with a plain <video>). */
+   YouTube link or an uploaded video file (assets/videos/, played with a plain <video>).
+   Secret codes (also in content/videos.json): tap the VCR clock, type 4 digits, and a matching
+   code zooms straight into the TV showing its photo or video. */
 (function () {
   const $ = (sel, root = document) => root.querySelector(sel);
   const stage = $("#vhsStage");
@@ -20,7 +22,7 @@
   const OCBg = window.OCBg || { duck() {}, unduck() {} };
   const BG = { duck: () => OCBg.duck("tv"), unduck: () => OCBg.unduck("tv") };
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  let videos = [];
+  let videos = [], secrets = [];
 
   // The photo's black TV bezel as fractions of the photo (--bz-* in css/style.css; the wide photo
   // and the tall phone photo each have their own). The .vhs-frame box is this bezel's shape.
@@ -52,9 +54,12 @@
     return fetch("content/videos.json", { cache: "no-cache" })
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
-        const next = ((d && d.videos) || [])
-          .map(v => ({ title: String(v.title || "").trim(), file: String(v.file || "").trim(), id: ytId(v.video), zoom: +v.zoom || 1 }))
-          .filter(v => v.title && (v.file || v.id));
+        const item = v => ({ title: String(v.title || "").trim(), image: String(v.image || "").trim(),
+          file: String(v.file || "").trim(), id: ytId(v.video), zoom: +v.zoom || 1 });
+        secrets = ((d && d.secrets) || [])
+          .map(v => ({ ...item(v), code: String(v.code || "").replace(/\D/g, ""), title: String(v.title || "").trim() || "Secret" }))
+          .filter(v => v.code.length === 4 && (v.image || v.file || v.id));
+        const next = ((d && d.videos) || []).map(item).filter(v => v.title && (v.image || v.file || v.id));
         if (current === null && JSON.stringify(next) !== JSON.stringify(videos)) { videos = next; render(); }
       })
       .catch(() => {});
@@ -64,6 +69,7 @@
 
   /* ---------- State ---------- */
   let on = false, busy = false, current = null, playing = false;
+  let item = null;                                     // what's on the screen (a video from the list, or a secret)
   let yt = null, ytReady = null;
 
   function setLed(t, blink) { led.textContent = t; led.classList.toggle("blink", !!blink); }
@@ -75,7 +81,7 @@
   function status() {   // read out to screen readers only
     if (!on) now.textContent = "";
     else if (current === null) now.textContent = "Pick a tape.";
-    else now.textContent = `${playing ? "Playing" : "Paused"}: ${videos[current].title}`;
+    else now.textContent = `${src === "image" ? "Showing" : playing ? "Playing" : "Paused"}: ${item.title}`;
   }
 
   /* ---------- Grain: faint static on the idle TV, gray grain behind the menu ---------- */
@@ -151,38 +157,50 @@
   function stopVideo() {
     try { yt && yt.stopVideo && yt.stopVideo(); } catch (_) {}
     if (fileEl.getAttribute("src")) { fileEl.pause(); fileEl.removeAttribute("src"); fileEl.load(); }
+    imageEl.removeAttribute("src");
     if (playing) BG.unduck();
-    playing = false; current = null;
+    playing = false; current = null; item = null;
   }
   function doFlicker() {
     flicker.classList.remove("is-on"); void flicker.offsetWidth; flicker.classList.add("is-on");
     hiss(.7);
   }
 
-  function playTape(i) {
-    const v = videos[i];
-    if (!v || busy) return;
+  const imageBox = $("#vhsImage"), imageEl = imageBox.querySelector("img");
+  function playTape(i) { if (videos[i] && !busy) playItem(videos[i], i); }
+  // Puts a video or photo on the screen. `instant` (a secret code): no flicker, the menu is skipped.
+  function playItem(v, idx, instant) {
     busy = true;
-    BG.duck();                                         // before stopping the record, so the music never sneaks back in
-    if (window.OCDeck && window.OCDeck.playing) window.OCDeck.toggle();   // stop a song on the record
-    current = i; playing = true; setPP(); status();
-    src = v.file ? "file" : "yt";
+    current = idx; item = v;
+    src = v.image ? "image" : v.file ? "file" : "yt";
     screen.dataset.src = src;
     screen.style.setProperty("--zoom", v.zoom || 1);
+    if (src === "image") {                             // a photo: no sound, so the music keeps playing
+      playing = false;
+      imageEl.src = v.image;
+      imageBox.firstElementChild.style.backgroundImage = `url("${v.image.replace(/"/g, "%22")}")`;
+    } else {
+      BG.duck();                                       // before stopping the record, so the music never sneaks back in
+      if (window.OCDeck && window.OCDeck.playing) window.OCDeck.toggle();   // stop a song on the record
+      playing = true; setPP();
+    }
+    status();
     if (src === "file") {
       // started right here in the click, so browsers allow it to play with sound
       fileEl.src = v.file;
       fileEl.play().catch(() => { if (isFile()) { playing = false; setPP(); } });
     }
-    doFlicker();
-    setTimeout(() => {
-      menu.hidden = true; pp.hidden = false;
+    const show = () => {
+      menu.hidden = true; pp.hidden = src === "image";
       if (src === "yt") {
         const go = () => yt.loadVideoById(v.id);
         yt && yt.loadVideoById ? go() : ensurePlayer(v.id).then(go);
       }
-      busy = false;
-    }, reduced ? 0 : 380);
+      if (!instant) busy = false;
+    };
+    if (instant) { show(); return; }
+    doFlicker();
+    setTimeout(show, reduced ? 0 : 380);
   }
   function toMenu() {
     stopVideo(); status();
@@ -217,14 +235,18 @@
       y: room.offsetTop + y + z.rh * z.BEZEL.t * s - z.ft
     });
   }
-  function turnOn() {
+  // `secret` (from the clock code): zoom straight in with its photo/video already on the screen
+  function turnOn(secret) {
     if (on || busy) return;
     on = busy = true; audio(); thunk();
     loadList();
     glass.classList.add("is-loud"); setLed("ON");
-    player.hidden = false; menu.hidden = false; pp.hidden = true; moreHint();
+    player.hidden = false; pp.hidden = true;
+    if (secret) playItem(secret, -1, true);
+    else { menu.hidden = false; moreHint(); }
     const done = () => {
       busy = false; setLed("12:00"); status();
+      if (secret) return;
       const first = list.querySelector(".vhs-item"); first && first.focus({ preventScroll: true });
       if (videos[0]) ensurePlayer(videos[0].id);       // warm up YouTube while they choose
     };
@@ -266,7 +288,42 @@
     if (current !== null) toMenu(); else turnOff();
   }
 
-  onBtn.addEventListener("click", turnOn);
+  onBtn.addEventListener("click", () => turnOn());
+
+  /* ---------- The VCR clock as a code pad ---------- */
+  const codeEl = $("#vhsCode");
+  let digits = "", errTimer = 0;
+  function showDigits() {
+    const d = (digits + "____").slice(0, 4);
+    setLed(d.slice(0, 2) + ":" + d.slice(2)); led.classList.add("is-entry");
+  }
+  function clockBack() { clearTimeout(errTimer); led.classList.remove("is-entry"); if (!on) setLed("12:00", true); }
+  codeEl.addEventListener("focus", () => {
+    if (on || busy) { codeEl.blur(); return; }
+    clearTimeout(errTimer); digits = ""; codeEl.value = ""; showDigits(); audio();
+    loadList();                                        // pick up codes added since the page opened
+  });
+  codeEl.addEventListener("input", () => {
+    digits = codeEl.value.replace(/\D/g, "").slice(0, 4);
+    codeEl.value = digits; showDigits();
+    if (digits.length === 4) checkCode();
+  });
+  codeEl.addEventListener("keydown", e => { if (e.key === "Escape") codeEl.blur(); });
+  codeEl.addEventListener("blur", clockBack);
+  function checkCode() {
+    const s = secrets.find(x => x.code === digits);
+    if (s) {
+      led.classList.remove("is-entry");
+      turnOn(s);                                       // straight into the TV
+      codeEl.blur();
+      return;
+    }
+    hiss(.35, .08); setLed("ERR", true);               // wrong code: try again
+    errTimer = setTimeout(() => {
+      digits = ""; codeEl.value = "";
+      document.activeElement === codeEl ? showDigits() : clockBack();
+    }, 1200);
+  }
   list.addEventListener("click", e => { const b = e.target.closest("[data-i]"); if (b) playTape(+b.dataset.i); });
   list.addEventListener("keydown", e => {            // arrow keys move through the menu like a VCR remote
     if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;

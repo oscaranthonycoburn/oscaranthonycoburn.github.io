@@ -12,6 +12,12 @@ media:
     output: /assets/videos
     categories: [video]
     rename: safe
+  - name: secret
+    label: Secret code photos & videos
+    input: assets/secret
+    output: /assets/secret
+    categories: [image, video]
+    rename: safe
 
 content:
   - name: news
@@ -98,3 +104,32 @@ content:
             label: Zoom (optional)
             type: number
             description: Leave EMPTY for normal videos. Only for videos with black bars built in (like square album-art videos), 1.44 zooms in until the picture fills the TV.
+      - name: secrets
+        label: Secret codes (the VCR clock)
+        type: object
+        list: true
+        description: Tap the green 12:00 on the VCR and type a 4-digit code. A matching code zooms straight into the TV and shows its photo or video. Anyone who digs through the site's files could find the codes, so treat them as a fun Easter egg, not a lock.
+        fields:
+          - name: code
+            label: Code (4 digits)
+            type: string
+            required: true
+            description: Exactly 4 numbers, e.g. 4933.
+          - name: title
+            label: Name (only for your reference)
+            type: string
+          - name: image
+            label: Photo
+            type: image
+            options:
+              media: secret
+            description: Use a photo OR a video below.
+          - name: video
+            label: …or a YouTube link
+            type: string
+          - name: file
+            label: …or a video file
+            type: file
+            options:
+              media: secret
+              categories: [video]

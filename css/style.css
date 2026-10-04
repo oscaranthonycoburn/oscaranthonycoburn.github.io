@@ -746,6 +746,13 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
 }
 .vhs-led.blink, .vhs-pp.blink { animation: led-blink 1.1s steps(1) infinite; }
 @keyframes led-blink { 50% { color: rgba(141, 255, 154, .2); text-shadow: none; } }
+/* the clock is also a code pad: an invisible input over it (16px text so iPhones don't zoom in) */
+.vhs-code {
+  position: absolute; left: 54.4%; top: 75.2%; width: 10.9%; height: 8.6%; z-index: 6;
+  margin: 0; padding: 0; border: 0; border-radius: 4px; background: transparent; opacity: 0;
+  font-size: 16px; color: transparent; caret-color: transparent; cursor: pointer; -webkit-appearance: none; appearance: none;
+}
+.vhs-led.is-entry { letter-spacing: .14em; }
 /* only the TV cabinet is clickable (not the room or the VCR) */
 .vhs-on { position: absolute; left: 28.4%; top: 20.4%; width: 43.6%; height: 51.5%; z-index: 5; border: 0; border-radius: 3% / 4%; background: transparent; cursor: pointer; }
 .vhs-on:focus-visible { outline: 2px solid var(--amber); outline-offset: -6px; }
@@ -754,6 +761,7 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
   .vhs-glass { left: 23.27%; top: 31.75%; width: 44.7%; height: 19.33%; }
   .vhs-led { left: 57.47%; top: 55.71%; width: 15.45%; height: 3.58%; font-size: 3.6cqw; }
   .vhs-on { left: 15.45%; top: 28.29%; width: 69.2%; height: 25.76%; }
+  .vhs-code { left: 56.5%; top: 55%; width: 17.4%; height: 5%; }
 }
 
 /* zoomed in: the bezel frame on the moving background; the screen sits behind the bezel */
@@ -787,7 +795,12 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
 /* an uploaded video file (instead of YouTube): fills the screen the same way */
 .vhs-file { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(var(--zoom, 1)); pointer-events: none; background: #000; }
 .vhs-video:not([data-src="file"]) .vhs-file { display: none; }
-.vhs-video[data-src="file"] iframe { visibility: hidden; }
+.vhs-video:not([data-src="yt"]) iframe { visibility: hidden; }
+/* a photo (e.g. from a secret code): shown whole, with a blurred copy of itself filling the corners */
+.vhs-image { position: absolute; inset: 0; display: none; overflow: hidden; background: #000; }
+.vhs-video[data-src="image"] .vhs-image { display: block; }
+.vhs-image i { position: absolute; inset: -30px; background: 50% 50% / cover no-repeat; filter: blur(22px) brightness(.55); }
+.vhs-image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transform: scale(var(--zoom, 1)); }
 
 .vhs-bezel { position: absolute; z-index: 1; left: -1.868%; top: -4.651%; width: 104.023%; height: 109.808%; max-width: none; pointer-events: none; }
 

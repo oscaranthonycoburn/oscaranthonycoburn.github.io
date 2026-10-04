@@ -174,7 +174,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,900&family=Bebas+Neue&family=Inter:wght@400;500;600&family=Permanent+Marker&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20261004c">
+  <link rel="stylesheet" href="css/style.css?v=20261004d">
 </head>
 <body>
   <a class="skip" href="#tracks" data-scroll>Skip to tracklist</a>
@@ -409,6 +409,8 @@
         </picture>
         <div class="vhs-glass" aria-hidden="true"><canvas class="tv-static" id="tvStatic" width="160" height="120"></canvas></div>
         <div class="vhs-led blink" id="vcrLed" aria-hidden="true">12:00</div>
+        <!-- tap the clock to type a 4-digit code (shows the number keypad on phones) -->
+        <input class="vhs-code" id="vhsCode" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Enter a 4-digit code">
         <button class="vhs-on" id="vhsOn" aria-label="Turn on the TV and pick a video"></button>
       </div>
 
@@ -418,6 +420,7 @@
           <div class="vhs-video">
             <div id="tvPlayer"></div>
             <video class="vhs-file" id="vhsFile" playsinline preload="none" aria-hidden="true"></video>
+            <div class="vhs-image" id="vhsImage" aria-hidden="true"><i></i><img alt=""></div>
             <div class="vhs-menu" id="vhsMenu">
               <canvas class="vhs-grain" id="vhsGrain" width="200" height="120" aria-hidden="true"></canvas>
               <p class="vhs-menu-head" aria-hidden="true">SELECT TAPE</p>
@@ -472,16 +475,16 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/data.js?v=20261004c"></script>
-  <script src="js/shader.js?v=20261004c"></script>
+  <script src="js/data.js?v=20261004d"></script>
+  <script src="js/shader.js?v=20261004d"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
-  <script src="js/bg.js?v=20261004c"></script>
-  <script src="js/yt.js?v=20261004c"></script>
-  <script src="js/main.js?v=20261004c"></script>
-  <script src="js/deck.js?v=20261004c"></script>
-  <script src="js/alarm.js?v=20261004c"></script>
-  <script src="js/videos.js?v=20261004c"></script>
+  <script src="js/bg.js?v=20261004d"></script>
+  <script src="js/yt.js?v=20261004d"></script>
+  <script src="js/main.js?v=20261004d"></script>
+  <script src="js/deck.js?v=20261004d"></script>
+  <script src="js/alarm.js?v=20261004d"></script>
+  <script src="js/videos.js?v=20261004d"></script>
 </body>
 </html>
