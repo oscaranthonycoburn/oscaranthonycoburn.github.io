@@ -67,6 +67,14 @@ window.SITE = {
     { title: "I Ain't Perfect", length: "3:24", id: "Z86v2BupQ64", titleTrack: true }
   ],
 
+  // Videos tab: VHS tapes on the desk. Click one and it goes into the VCR and plays on the TV.
+  // `id` is the YouTube video ID; `color` is the stripe on the tape's label. Add a tape by adding a line.
+  videos: [
+    { label: "VOL. 1", title: "Subhuman Nature", id: "himYSGRDR0Q", color: "#d42a2a" },
+    { label: "VOL. 2", title: "Dreams",          id: "V9bUHai0z0o", color: "#e0a35c" },
+    { label: "VOL. 3", title: "Time",            id: "cyxLA8L8PJk", color: "#c4622d" }
+  ],
+
   // "Ask Oscar" contact form. The address is split so it never appears whole in the page
   // (keeps it away from spam bots). The Web3Forms key below sends messages straight to
   // Oscar's inbox; if it's ever removed, the form opens the visitor's email app instead.

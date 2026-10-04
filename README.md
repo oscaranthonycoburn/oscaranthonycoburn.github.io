@@ -23,6 +23,11 @@ Home and Library are both in `index.html`, so switching between them never stops
 - To add an album, copy the entry in `library` in `js/data.js`, change it, and put its cover in `assets/`. Empty "+" slots fill the rest (at least `librarySlots`, rounded up to a full row of 3).
 - Clicking an album (hero cover or Library) opens a "Listen on" chooser with Spotify and Apple Music. `links.spotify` and `links.appleMusic` in `js/data.js` are the defaults (also used by the hero buttons and Follow cards); a library entry can set its own `spotify` / `appleMusic`.
 
+## Videos (VHS room)
+The Videos tab (`#videos`) is a retro room: wood-panel wall with string lights, a guitar, posters and a lamp, and a desk with a CRT TV, a VCR and VHS tapes. Clicking a tape flies it into the VCR (GSAP), the TV crackles with static, powers on and plays the YouTube video inside the screen (scanlines, curved glass). Tap the TV to pause; ⏏ ejects the tape back to the desk. Background music pauses while a tape plays; leaving the tab pauses the tape.
+- Tapes are `videos` in `js/data.js`: `label` (VOL. 1…), `title`, YouTube `id`, label stripe `color`. Add a tape by adding a line (desktop stacks 3; add positions in `css/style.css` for more).
+- Code: `js/videos.js`, styles under "Videos" in `css/style.css`.
+
 ## News board
 The News tab (`#news`) is laid out like a newspaper front page: a dateline, section tabs to filter by category, the top story as a big headline, and the rest in ruled columns. Posts live in `content/news.json`, pinned first, then newest first. Each post has `title`, `category` (Releases, Shows, Videos, Announcements or Behind the Scenes, set in `newsCategories` in `js/data.js`), `date` (YYYY-MM-DD), `body` (blank line between paragraphs), and optional `image`, `link`, `linkLabel`, `pinned`, `hideAfter` (YYYY-MM-DD: the post disappears after that date). A post stays up until it's deleted from the file or its `hideAfter` date passes.
 

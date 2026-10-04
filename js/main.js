@@ -294,7 +294,7 @@
   $$("[data-listen]").forEach(b => b.addEventListener("click", () => { if (deckApi() && !deckApi().playing) deckApi().play(); }));
 
   /* ---------- Views: Home and Library live in one page so the music never stops ---------- */
-  const TITLES = { home: "Oscar A. Coburn · I Ain't Perfect (Debut EP) · Official Site", library: "Library · Oscar A. Coburn", news: "News · Oscar A. Coburn" };
+  const TITLES = { home: "Oscar A. Coburn · I Ain't Perfect (Debut EP) · Official Site", library: "Library · Oscar A. Coburn", news: "News · Oscar A. Coburn", videos: "Videos · Oscar A. Coburn" };
   let lenis = null;
   let currentView = "home";
   const pill = $(".nav-pill");

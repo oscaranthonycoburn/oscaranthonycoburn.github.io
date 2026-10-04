@@ -173,7 +173,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,900&family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,900&family=Bebas+Neue&family=Inter:wght@400;500;600&family=Permanent+Marker&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -188,6 +188,7 @@
       <a href="#home" data-go="home" aria-current="page">Home</a>
       <a href="#library" data-go="library">Library</a>
       <a href="#news" data-go="news">News</a>
+      <a href="#videos" data-go="videos">Videos</a>
     </nav>
     <nav class="nav-links" aria-label="Sections">
       <a href="#tracks" data-scroll>Tracks</a>
@@ -397,6 +398,97 @@
     </section>
   </main>
 
+  <main id="videos" data-view="videos" hidden>
+    <section class="section videos">
+      <div class="section-head videos-head">
+        <p class="kicker">Tapes</p>
+        <h1 class="section-title">Videos</h1>
+        <p class="library-intro">Pick a tape and pop it in. Tap the TV to pause, hit ⏏ to eject.</p>
+      </div>
+
+      <div class="vhs-scene" id="vhsScene">
+        <div class="room-wall" aria-hidden="true"></div>
+        <div class="room-panel" aria-hidden="true"></div>
+        <svg class="string-lights" viewBox="0 0 1000 80" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 18 Q 125 62 250 22 T 500 22 T 750 22 T 1000 18" fill="none" stroke="#1a110b" stroke-width="2"/>
+          <g class="bulbs">
+            <circle cx="60" cy="34" r="6"/><circle cx="140" cy="44" r="6"/><circle cx="220" cy="30" r="6"/><circle cx="300" cy="32" r="6"/>
+            <circle cx="380" cy="44" r="6"/><circle cx="460" cy="30" r="6"/><circle cx="540" cy="32" r="6"/><circle cx="620" cy="44" r="6"/>
+            <circle cx="700" cy="30" r="6"/><circle cx="780" cy="32" r="6"/><circle cx="860" cy="44" r="6"/><circle cx="940" cy="30" r="6"/>
+          </g>
+        </svg>
+
+        <div class="poster poster-cover" aria-hidden="true"><img data-src="cover" alt=""><i class="tape-tl"></i><i class="tape-tr"></i></div>
+        <div class="poster poster-gig" aria-hidden="true">
+          <span class="gig-kicker">Out now</span>
+          <span class="gig-title">I Ain't Perfect</span>
+          <span class="gig-name">Oscar A. Coburn</span>
+          <span class="gig-foot">The debut EP</span>
+        </div>
+        <div class="poster poster-rpm" aria-hidden="true"><span>33⅓</span><small>RPM</small></div>
+        <div class="guitar" aria-hidden="true"><svg viewBox="0 0 100 300" aria-hidden="true">
+              <defs>
+                <linearGradient id="gWood" x1="0" x2="1"><stop offset="0" stop-color="#8a4a22"/><stop offset=".45" stop-color="#e0a35c"/><stop offset="1" stop-color="#7a3d18"/></linearGradient>
+                <radialGradient id="gBurst" cx=".5" cy=".62" r=".6"><stop offset=".55" stop-color="#e0a35c" stop-opacity="0"/><stop offset="1" stop-color="#2a1810" stop-opacity=".85"/></radialGradient>
+              </defs>
+              <rect x="41" y="0" width="18" height="30" rx="4" fill="#2a1810"/>
+              <g fill="#cfc4ae"><circle cx="38" cy="7" r="3"/><circle cx="38" cy="16" r="3"/><circle cx="38" cy="25" r="3"/><circle cx="62" cy="7" r="3"/><circle cx="62" cy="16" r="3"/><circle cx="62" cy="25" r="3"/></g>
+              <rect x="44" y="28" width="12" height="125" fill="#1d120c"/>
+              <g stroke="#cfc4ae" stroke-width=".8" opacity=".7"><line x1="44" x2="56" y1="44" y2="44"/><line x1="44" x2="56" y1="60" y2="60"/><line x1="44" x2="56" y1="75" y2="75"/><line x1="44" x2="56" y1="89" y2="89"/><line x1="44" x2="56" y1="102" y2="102"/><line x1="44" x2="56" y1="114" y2="114"/><line x1="44" x2="56" y1="125" y2="125"/><line x1="44" x2="56" y1="135" y2="135"/></g>
+              <path d="M50 140 C 20 140, 14 165, 24 185 C 30 197, 10 205, 8 235 C 6 275, 30 296, 50 296 C 70 296, 94 275, 92 235 C 90 205, 70 197, 76 185 C 86 165, 80 140, 50 140 Z" fill="url(#gWood)" stroke="#2a1810" stroke-width="2"/>
+              <path d="M50 140 C 20 140, 14 165, 24 185 C 30 197, 10 205, 8 235 C 6 275, 30 296, 50 296 C 70 296, 94 275, 92 235 C 90 205, 70 197, 76 185 C 86 165, 80 140, 50 140 Z" fill="url(#gBurst)"/>
+              <circle cx="50" cy="200" r="15" fill="none" stroke="#2a1810" stroke-width="3"/>
+              <circle cx="50" cy="200" r="12" fill="#120a06"/>
+              <rect x="36" y="252" width="28" height="7" rx="2" fill="#2a1810"/>
+              <g stroke="#f2e6cf" stroke-width=".6" opacity=".85"><line x1="47" x2="46" y1="8" y2="255"/><line x1="49" x2="48.6" y1="8" y2="255"/><line x1="51" x2="51.4" y1="8" y2="255"/><line x1="53" x2="54" y1="8" y2="255"/></g>
+            </svg></div>
+        <div class="lamp" aria-hidden="true">
+          <div class="lamp-glow"></div>
+          <svg viewBox="0 0 100 140">
+            <path d="M18 10 L 62 10 L 78 52 L 2 52 Z" fill="#c4622d" stroke="#2a1810" stroke-width="2"/>
+            <ellipse cx="40" cy="52" rx="38" ry="5" fill="#ffd796" opacity=".9"/>
+            <line x1="40" y1="56" x2="60" y2="104" stroke="#2a1810" stroke-width="5" stroke-linecap="round"/>
+            <line x1="60" y1="104" x2="44" y2="128" stroke="#2a1810" stroke-width="5" stroke-linecap="round"/>
+            <ellipse cx="44" cy="132" rx="26" ry="7" fill="#2a1810"/>
+          </svg>
+        </div>
+
+        <div class="desk" aria-hidden="true"><div class="desk-top"></div><div class="desk-front"><i></i><i></i></div></div>
+
+        <div class="tv" id="tv">
+          <div class="tv-antenna" aria-hidden="true"><i></i><i></i></div>
+          <div class="tv-body">
+            <div class="tv-screen-wrap">
+              <div class="tv-screen" id="tvScreen">
+                <canvas class="tv-static" id="tvStatic" width="160" height="120" aria-hidden="true"></canvas>
+                <div class="tv-video" id="tvVideo"><div id="tvPlayer"></div></div>
+                <div class="tv-osd" id="tvOsd" aria-live="polite">INSERT TAPE</div>
+                <div class="crt" aria-hidden="true"></div>
+                <button class="tv-hit" id="tvHit" aria-label="Pause or play the tape"></button>
+              </div>
+            </div>
+            <div class="tv-panel" aria-hidden="true">
+              <i class="knob"></i><i class="knob small"></i>
+              <div class="grille"></div>
+              <i class="tv-power" id="tvPower"></i>
+            </div>
+          </div>
+          <div class="tv-feet" aria-hidden="true"><i></i><i></i></div>
+        </div>
+
+        <div class="vcr" id="vcr">
+          <div class="vcr-slot" id="vcrSlot"><i class="vcr-flap"></i></div>
+          <div class="vcr-led" id="vcrLed" aria-live="polite">12:00</div>
+          <button class="vcr-eject" id="vcrEject" aria-label="Eject tape" disabled>⏏</button>
+          <span class="vcr-brand" aria-hidden="true">VHS · HI-FI</span>
+        </div>
+
+        <div class="vhs-tapes" id="vhsTapes"></div>
+      </div>
+      <p class="vhs-now" id="vhsNow">No tape in the VCR.</p>
+    </section>
+  </main>
+
   <main id="news" data-view="news" hidden>
     <section class="section news">
       <div class="section-head news-head">
@@ -444,5 +536,6 @@
   <script src="js/main.js"></script>
   <script src="js/deck.js"></script>
   <script src="js/alarm.js"></script>
+  <script src="js/videos.js"></script>
 </body>
 </html>
