@@ -1,6 +1,6 @@
 /* Videos tab: the room photo (assets/vhs/room.webp) fills the tab.
-   Tap it: the camera zooms into the TV until the photo's screen lands exactly on the opening of the
-   bezel frame (assets/vhs/frame.webp), which fades in over it, so the TV *becomes* the frame.
+   Tap the TV: the camera zooms in until the photo's black TV bezel lands exactly on the border
+   (assets/vhs/frame.webp, the same bezel), which fades in over it, so the TV *becomes* the border.
    Inside: a grainy tape menu (VOL. 1–4). Pick one: the screen flickers and the video plays.
    The green readout above the frame plays/pauses; the arrow goes back (video -> menu -> room).
    Tapes = `videos` in js/data.js. */
@@ -20,9 +20,9 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const videos = S.videos || [];
 
-  // Where things are, as fractions: the photo's TV glass, and the bezel frame's opening.
-  const GLASS = { l: .3318, t: .2701, w: .2827, h: .3914 };
-  const OPENING = { l: .0783, t: .0744, w: .8416, h: .8331 };
+  // The photo's black TV bezel, measured in pixels of the 1733x907 photo. The .vhs-frame box is
+  // this bezel's shape, and the border image fills it.
+  const BEZEL = { l: 530 / 1733, t: 216 / 907, w: 565 / 1733, h: 408 / 907 };
 
   list.innerHTML = videos.map((v, i) =>
     `<li><button class="vhs-item" data-i="${i}" aria-label="${esc(v.label)}: ${esc(v.title)}"><i aria-hidden="true"></i>${esc(v.label)}</button></li>`).join("");
@@ -137,16 +137,12 @@
   /* ---------- Room <-> frame: the photo's TV screen is zoomed onto the frame's opening ---------- */
   function zoomTarget() {   // the player must be laid out (not display:none) to measure
     const st = stage.getBoundingClientRect(), fr = frame.getBoundingClientRect();
-    const o = { x: fr.left - st.left + fr.width * OPENING.l, y: fr.top - st.top + fr.height * OPENING.t,
-                w: fr.width * OPENING.w, h: fr.height * OPENING.h };
     const rw = room.offsetWidth, rh = room.offsetHeight;
-    // The photo's screen is squarer than the frame's 16:9 opening: match most of the width
-    // (its sides tuck under the bezel) and let its top and bottom run under the bezel too.
-    const scale = (o.w / (rw * GLASS.w)) * .94;
+    const scale = fr.width / (rw * BEZEL.w);           // same shape, so the height matches too
     return {
       scale,
-      x: o.x + o.w / 2 - room.offsetLeft - rw * (GLASS.l + GLASS.w / 2) * scale,
-      y: o.y + o.h / 2 - room.offsetTop - rh * (GLASS.t + GLASS.h / 2) * scale
+      x: fr.left - st.left - room.offsetLeft - rw * BEZEL.l * scale,
+      y: fr.top - st.top - room.offsetTop - rh * BEZEL.t * scale
     };
   }
   function turnOn() {

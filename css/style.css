@@ -683,7 +683,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* ---------- Videos: the room photo fills the tab; tap the TV to zoom into the tape menu ---------- */
 /* The photo covers the stage, centered on the TV. Overlays are placed in % of the 1733x907
    photo, so they line up at any size. Zoomed in, the site's moving background shows around the frame. */
-.vhs-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+#videos { position: relative; }
+.vhs-sr { position: absolute; top: 0; left: 0; margin: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only the picture */
 .vhs-stage { position: relative; height: max(440px, 100svh); overflow: hidden; container-type: size; isolation: isolate; }
 .vhs-room {
   --rw: max(100cqw, 100cqh * 1.9107);
@@ -692,15 +694,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
   top: clamp(100cqh - var(--rw) / 1.9107, 50cqh - var(--rw) / 1.9107 * .465, 0px);
   transform-origin: 0 0; will-change: transform, opacity;
 }
-.vhs-photo {
-  position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none;
-  -webkit-mask-image: linear-gradient(to bottom, #000 84%, transparent); mask-image: linear-gradient(to bottom, #000 84%, transparent);
-}
+.vhs-photo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; }
 
 /* TV glass: faint static on the photo's dark screen (livelier on hover) */
 .vhs-glass { position: absolute; left: 33.18%; top: 27.01%; width: 28.27%; height: 39.14%; border-radius: 12% / 15%; overflow: hidden; pointer-events: none; }
 .vhs-glass .tv-static { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; opacity: .14; mix-blend-mode: screen; transition: opacity .3s; }
-.vhs-stage:hover .tv-static, .vhs-glass.is-loud .tv-static { opacity: .42; }
+.vhs-room:has(.vhs-on:hover) .tv-static, .vhs-glass.is-loud .tv-static { opacity: .42; }
 
 /* VCR display: covers the photo's "PAUSE" with a live clock (only the digits blink) */
 .vhs-led {
@@ -711,7 +710,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .vhs-led.blink, .vhs-pp.blink { animation: led-blink 1.1s steps(1) infinite; }
 @keyframes led-blink { 50% { color: rgba(141, 255, 154, .2); text-shadow: none; } }
-.vhs-on { position: absolute; inset: 0; z-index: 5; border: 0; background: transparent; cursor: pointer; }
+/* only the TV cabinet is clickable (not the room or the VCR) */
+.vhs-on { position: absolute; left: 28.4%; top: 20.4%; width: 43.6%; height: 51.5%; z-index: 5; border: 0; border-radius: 3% / 4%; background: transparent; cursor: pointer; }
 .vhs-on:focus-visible { outline: 2px solid var(--amber); outline-offset: -6px; }
 
 /* zoomed in: the bezel frame on the moving background; the screen sits behind the bezel */
@@ -721,8 +721,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
   padding: calc(132px + env(safe-area-inset-top)) 16px 28px;
 }
 .vhs-player[hidden] { display: none; }
-.vhs-frame { position: relative; width: min(100%, 1180px, calc((100cqh - 160px - env(safe-area-inset-top)) * 1.7768)); aspect-ratio: 1672 / 941; }
-.vhs-video { position: absolute; z-index: 0; left: 6.9%; top: 6.6%; width: 86.1%; height: 85.1%; overflow: hidden; background: #000; container-type: size; }
+/* The frame box is exactly the photo's black TV bezel (565x408 px of the photo), so the zoom can land
+   the photo's bezel on it pixel for pixel. The border image's own bezel (26..1418 x 46..1035 of its
+   1448x1086) is stretched to fill the box (a 1.6% difference in shape, not visible). */
+.vhs-frame { position: relative; width: min(100%, 1000px, calc((100cqh - 160px - env(safe-area-inset-top)) * 1.3848)); aspect-ratio: 565 / 408; }
+.vhs-video { position: absolute; z-index: 0; left: 7.4%; top: 7.6%; width: 85.2%; height: 84.8%; overflow: hidden; background: #000; container-type: size; }
 /* the player is 60px taller top and bottom: the video stays full width, and YouTube's own title bar
    and logo (drawn in those extra strips) are cut off by the screen's edges */
 .vhs-video iframe, .vhs-video #tvPlayer { position: absolute; left: 0; top: -60px; width: 100%; height: calc(100% + 120px); border: 0; pointer-events: none; }
@@ -731,7 +734,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   background: repeating-linear-gradient(180deg, rgba(0,0,0,.2) 0 1px, transparent 1px 3px),
               radial-gradient(ellipse at center, transparent 62%, rgba(0,0,0,.5) 100%);
 }
-.vhs-bezel { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; }
+.vhs-bezel { position: absolute; z-index: 1; left: -1.868%; top: -4.651%; width: 104.023%; height: 109.808%; max-width: none; pointer-events: none; }
 
 /* above the frame: back arrow (left) and the green VCR play/pause readout (right) */
 .vhs-back, .vhs-pp { position: absolute; bottom: calc(100% + 10px); z-index: 2; }

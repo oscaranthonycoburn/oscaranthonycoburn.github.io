@@ -316,6 +316,7 @@
 
   function showView(name, { scroll = true } = {}) {
     currentView = name;
+    document.body.dataset.view = name;
     $$("[data-view]").forEach(v => { v.hidden = v.dataset.view !== name; });
     markTab(name);
     document.title = TITLES[name];
