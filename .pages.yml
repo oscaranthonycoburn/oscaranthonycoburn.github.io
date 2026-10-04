@@ -81,4 +81,4 @@ content:
           - name: zoom
             label: Zoom (optional)
             type: number
-            description: Leave EMPTY for normal videos. Only for videos with black bars built in (like square album-art videos), 1.32 zooms in until the picture fills the TV.
+            description: Leave EMPTY for normal videos. Only for videos with black bars built in (like square album-art videos), 1.44 zooms in until the picture fills the TV.

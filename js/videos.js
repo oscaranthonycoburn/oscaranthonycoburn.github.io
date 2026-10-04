@@ -81,12 +81,14 @@
       cx.putImageData(img, 0, 0);
     };
   }
-  const paintTv = painter($("#tvStatic")), paintMenu = painter($("#vhsGrain"));
+  const cover = $("#vhsCover");
+  const paintTv = painter($("#tvStatic")), paintMenu = painter($("#vhsGrain")), paintCover = painter(cover);
   let tick = 0;
   (function loop() {
     if (!view.hidden && tick++ % 2 === 0) {            // ~30fps is plenty for static
       if (!on || busy) paintTv(255);
       if (on && !menu.hidden) paintMenu(150);
+      if (on && cover.className !== "vhs-cover") paintCover(170);
     }
     requestAnimationFrame(loop);
   })();
@@ -122,14 +124,28 @@
         onReady: () => resolve(),
         onStateChange: e => {
           if (current === null) return;
-          if (e.data === OCYT.PLAYING) { playing = true; BG.duck(); setPP(); status(); }
+          if (e.data === OCYT.PLAYING) {
+            playing = true; BG.duck(); setPP(); status();
+            // YouTube shows its own round pause button (and, at the start, the title) for a few
+            // seconds whenever playback starts; it can't be switched off, so it's covered: a new
+            // video stays on tape static, a resumed one gets a VCR tracking band across the middle.
+            if (fresh) { fresh = false; setCover("full", COVER_MS); } else setCover("band", COVER_MS);
+          }
           else if (e.data === OCYT.PAUSED) { playing = false; BG.unduck(); setPP(); status(); }
           else if (e.data === OCYT.ENDED) { playing = false; setTimeout(() => { if (current !== null) toMenu(); }, 600); }
         }
       });
     })));
   }
+  const COVER_MS = 3600;
+  let fresh = false, coverTimer = 0;
+  function setCover(mode, ms) {
+    clearTimeout(coverTimer);
+    cover.className = "vhs-cover" + (mode ? " is-" + mode : "");
+    if (mode && ms) coverTimer = setTimeout(() => setCover(null), ms);
+  }
   function stopVideo() {
+    setCover(null); fresh = false;
     try { yt && yt.stopVideo && yt.stopVideo(); } catch (_) {}
     if (playing) BG.unduck();
     playing = false; current = null;
@@ -150,6 +166,7 @@
     setTimeout(() => {
       menu.hidden = true; pp.hidden = false;
       screen.style.setProperty("--zoom", v.zoom || 1);
+      fresh = true; setCover("full");                  // static until YouTube's start-up buttons are gone
       const go = () => yt.loadVideoById(v.id);
       yt && yt.loadVideoById ? go() : ensurePlayer(v.id).then(go);
       busy = false;
@@ -247,7 +264,7 @@
   pp.addEventListener("click", () => {
     if (!yt || !yt.getPlayerState) return;
     if (playing) yt.pauseVideo();
-    else { BG.duck(); yt.playVideo(); }
+    else { BG.duck(); setCover("band", COVER_MS); yt.playVideo(); }
   });
   back.addEventListener("click", goBack);
   document.addEventListener("keydown", e => { if (e.key === "Escape" && on && !view.hidden) goBack(); });

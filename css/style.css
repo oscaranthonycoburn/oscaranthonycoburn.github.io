@@ -726,11 +726,10 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
    1448x1086) is stretched to fill the box (a 1.6% difference in shape, not visible). */
 .vhs-frame { position: relative; width: min(100%, 1000px, calc((100cqh - 160px - env(safe-area-inset-top)) * 1.3848)); aspect-ratio: 565 / 408; }
 .vhs-video { position: absolute; z-index: 0; left: 7.4%; top: 7.6%; width: 85.2%; height: 84.8%; overflow: hidden; background: #000; container-type: size; }
-/* fishbowl screen: the 16:9 video is scaled up to fill the whole curved screen, corner to corner
-   (the sides and a little of the top and bottom run under the bezel, like a real CRT's overscan,
-   which also hides YouTube's own title bar) */
+/* fishbowl screen: the 16:9 video is scaled to just fill the whole curved screen, corner to corner
+   (the sides run under the bezel, like a real CRT's overscan) */
 .vhs-video iframe, .vhs-video #tvPlayer {
-  position: absolute; left: 50%; top: 50%; height: calc(116% * var(--zoom, 1)); width: auto; aspect-ratio: 16 / 9;
+  position: absolute; left: 50%; top: 50%; height: calc(103% * var(--zoom, 1)); width: auto; aspect-ratio: 16 / 9;
   transform: translate(-50%, -50%); border: 0; pointer-events: none;
 }
 /* curved glass: scanlines, a soft reflection up top-left, and the image darkening as it bends
@@ -739,10 +738,25 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
   position: absolute; inset: 0; z-index: 3; pointer-events: none;
   background:
     radial-gradient(ellipse 55% 38% at 30% 20%, rgba(255, 255, 255, .09), transparent 70%),
-    radial-gradient(ellipse 75% 70% at 50% 50%, transparent 58%, rgba(0, 0, 0, .28) 82%, rgba(0, 0, 0, .7) 100%),
+    radial-gradient(ellipse 75% 70% at 50% 50%, transparent 58%, rgba(0, 0, 0, .18) 84%, rgba(0, 0, 0, .5) 100%),
     repeating-linear-gradient(180deg, rgba(0, 0, 0, .18) 0 1px, transparent 1px 3px);
   box-shadow: inset 0 0 6cqh rgba(0, 0, 0, .55);
 }
+/* tape static over the picture while YouTube's own buttons are showing (see js/videos.js):
+   the whole screen when a video starts, a rolling tracking band across the middle when it resumes */
+.vhs-cover {
+  --band: max(11%, 46px);
+  position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; image-rendering: pixelated;
+  background: #161616; opacity: 0; pointer-events: none; transition: opacity .35s;
+}
+.vhs-cover.is-full { opacity: 1; transition: none; }
+.vhs-cover.is-band {
+  opacity: 1;
+  -webkit-mask-image: linear-gradient(transparent calc(50% - var(--band) - 10px), #000 calc(50% - var(--band)), #000 calc(50% + var(--band)), transparent calc(50% + var(--band) + 10px));
+  mask-image: linear-gradient(transparent calc(50% - var(--band) - 10px), #000 calc(50% - var(--band)), #000 calc(50% + var(--band)), transparent calc(50% + var(--band) + 10px));
+  animation: vhs-track .9s steps(6) infinite;
+}
+@keyframes vhs-track { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-3px); } 60% { transform: translateY(2px); } }
 .vhs-bezel { position: absolute; z-index: 1; left: -1.868%; top: -4.651%; width: 104.023%; height: 109.808%; max-width: none; pointer-events: none; }
 
 /* above the frame: back arrow (left) and the green VCR play/pause readout (right) */
