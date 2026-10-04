@@ -686,15 +686,36 @@ button { font: inherit; color: inherit; cursor: pointer; }
 #videos { position: relative; }
 .vhs-sr { position: absolute; top: 0; left: 0; margin: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only the picture */
-.vhs-stage { position: relative; height: max(440px, 100svh); overflow: hidden; container-type: size; isolation: isolate; }
+.vhs-stage { position: relative; height: max(300px, 100svh); overflow: hidden; container-type: size; isolation: isolate; }
+/* The photo covers the stage, but never zooms in so far that the TV and VCR (with a bit of wall
+   on each side) don't fit across: at most 1/.62 of the screen width (62% of the photo shows).
+   On a tall phone screen that leaves room above and below, filled by a blurred copy of the room. */
 .vhs-room {
-  --rw: max(100cqw, 100cqh * 1.9107);
+  --rw: max(100cqw, min(100cqh * 1.9107, 100cqw / .62));
+  --rh: calc(var(--rw) / 1.9107);
   position: absolute; width: var(--rw); aspect-ratio: 1733 / 907; container-type: inline-size;
-  left: clamp(100cqw - var(--rw), 50cqw - var(--rw) * .473, 0px);
-  top: clamp(100cqh - var(--rw) / 1.9107, 50cqh - var(--rw) / 1.9107 * .465, 0px);
+  left: clamp(100cqw - var(--rw), 50cqw - var(--rw) * .5, 0px);
+  /* the TV + VCR (middle of the photo, y 52%) centered in the space below the menu bar */
+  top: clamp(min(0px, 100cqh - var(--rh)), 32px + 50cqh - var(--rh) * .524, max(0px, 100cqh - var(--rh)));
   transform-origin: 0 0; will-change: transform, opacity;
 }
 .vhs-photo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; }
+/* the wall continues above the photo and the desk below it: mirrored, blurred copies of the
+   photo (only ever seen on tall screens; they move and zoom with the room) */
+.vhs-room::before, .vhs-room::after {
+  content: ""; position: absolute; left: 0; width: 100%; height: 100%; pointer-events: none;
+  background: url("../assets/vhs/room.webp") 0 0 / 100% 100% no-repeat;
+  filter: blur(18px) brightness(1.05); transform: scaleY(-1);
+}
+.vhs-room::before { bottom: calc(100% - 1px); -webkit-mask-image: linear-gradient(transparent, #000 70%); mask-image: linear-gradient(transparent, #000 70%); }
+.vhs-room::after { top: calc(100% - 1px); filter: blur(14px) brightness(.6); -webkit-mask-image: linear-gradient(#000 30%, transparent); mask-image: linear-gradient(#000 30%, transparent); }
+@media (orientation: portrait) {
+  /* soften the photo's top and bottom edges into the blurred continuation */
+  .vhs-photo {
+    -webkit-mask-image: linear-gradient(transparent, #000 5%, #000 95%, transparent);
+    mask-image: linear-gradient(transparent, #000 5%, #000 95%, transparent);
+  }
+}
 
 /* TV glass: faint static on the photo's dark screen (livelier on hover) */
 .vhs-glass { position: absolute; left: 33.18%; top: 27.01%; width: 28.27%; height: 39.14%; border-radius: 12% / 15%; overflow: hidden; pointer-events: none; }
