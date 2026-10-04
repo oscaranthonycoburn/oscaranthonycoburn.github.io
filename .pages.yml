@@ -2,8 +2,16 @@
 # Sign in at https://app.pagescms.org with GitHub; only people with write access to
 # this repo (members of the oscaranthonycoburn org) can open it and post.
 media:
-  input: assets/news
-  output: /assets/news
+  - name: news
+    label: News images
+    input: assets/news
+    output: /assets/news
+  - name: videos
+    label: Video files
+    input: assets/videos
+    output: /assets/videos
+    categories: [video]
+    rename: safe
 
 content:
   - name: news
@@ -40,6 +48,8 @@ content:
           - name: image
             label: Image (optional)
             type: image
+            options:
+              media: news
           - name: link
             label: Link (optional)
             type: string
@@ -76,8 +86,14 @@ content:
           - name: video
             label: YouTube link
             type: string
-            required: true
-            description: Paste the video's YouTube link, e.g. https://youtu.be/abc123 or https://www.youtube.com/watch?v=abc123 (Shorts links work too).
+            description: Paste the video's YouTube link, e.g. https://youtu.be/abc123 or https://www.youtube.com/watch?v=abc123 (Shorts links work too). Use this OR a video file below.
+          - name: file
+            label: …or a video file
+            type: file
+            options:
+              media: videos
+              categories: [video]
+            description: Upload an MP4 instead of a YouTube link (no YouTube buttons ever show). Keep it small, under 25 MB (720p is plenty on the TV). If both are filled in, the file is used.
           - name: zoom
             label: Zoom (optional)
             type: number

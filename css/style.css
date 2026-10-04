@@ -742,6 +742,11 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
     repeating-linear-gradient(180deg, rgba(0, 0, 0, .18) 0 1px, transparent 1px 3px);
   box-shadow: inset 0 0 6cqh rgba(0, 0, 0, .55);
 }
+/* an uploaded video file (instead of YouTube): fills the screen the same way */
+.vhs-file { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(var(--zoom, 1)); pointer-events: none; background: #000; }
+.vhs-video:not([data-src="file"]) .vhs-file { display: none; }
+.vhs-video[data-src="file"] iframe { visibility: hidden; }
+
 /* tape static over the picture while YouTube's own buttons are showing (see js/videos.js):
    the whole screen when a video starts, a rolling tracking band across the middle when it resumes */
 .vhs-cover {
