@@ -756,7 +756,7 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
 }
 .vhs-cover.is-full { opacity: 1; transition: none; }
 .vhs-cover.is-band {
-  opacity: 1;
+  opacity: 1; transition: none;
   -webkit-mask-image: linear-gradient(transparent calc(50% - var(--band) - 10px), #000 calc(50% - var(--band)), #000 calc(50% + var(--band)), transparent calc(50% + var(--band) + 10px));
   mask-image: linear-gradient(transparent calc(50% - var(--band) - 10px), #000 calc(50% - var(--band)), #000 calc(50% + var(--band)), transparent calc(50% + var(--band) + 10px));
   animation: vhs-track .9s steps(6) infinite;

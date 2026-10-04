@@ -144,20 +144,30 @@
             // YouTube shows its own round pause button (and, at the start, the title) for a few
             // seconds whenever playback starts; it can't be switched off, so it's covered: a new
             // video stays on tape static, a resumed one gets a VCR tracking band across the middle.
-            if (fresh) { fresh = false; setCover("full", COVER_MS); } else setCover("band", COVER_MS);
+            if (fresh) { fresh = false; coverFor("full"); } else coverFor("band");
           }
-          else if (e.data === OCYT.PAUSED) onPaused();
+          else if (e.data === OCYT.PAUSED) { setCover(null); onPaused(); }   // paused: YouTube shows nothing
+          else if (e.data === OCYT.BUFFERING && cover.className === "vhs-cover") setCover("band");   // hides YouTube's loading ring
           else if (e.data === OCYT.ENDED) onEnded();
         }
       });
     })));
   }
-  const COVER_MS = 3600;
-  let fresh = false, coverTimer = 0;
-  function setCover(mode, ms) {
-    clearTimeout(coverTimer);
+  // The static stays until the video has actually played this long (not just a timer), so a slow
+  // start or buffering can't let YouTube's button show through.
+  const COVER_SECS = 4;
+  let fresh = false, coverPoll = 0;
+  function setCover(mode) {
+    clearInterval(coverPoll);
     cover.className = "vhs-cover" + (mode ? " is-" + mode : "");
-    if (mode && ms) coverTimer = setTimeout(() => setCover(null), ms);
+  }
+  function coverFor(mode) {
+    setCover(mode);
+    const now = () => (yt && yt.getCurrentTime ? yt.getCurrentTime() : 0);
+    const t0 = now(), started = Date.now();
+    coverPoll = setInterval(() => {
+      if (now() - t0 >= COVER_SECS || Date.now() - started > 15000) setCover(null);
+    }, 200);
   }
   function stopVideo() {
     setCover(null); fresh = false;
@@ -292,7 +302,7 @@
     if (isFile()) { fileEl.paused ? (BG.duck(), fileEl.play().catch(() => {})) : fileEl.pause(); return; }
     if (!yt || !yt.getPlayerState) return;
     if (playing) yt.pauseVideo();
-    else { BG.duck(); setCover("band", COVER_MS); yt.playVideo(); }
+    else { BG.duck(); setCover("band"); yt.playVideo(); }
   });
   back.addEventListener("click", goBack);
   document.addEventListener("keydown", e => { if (e.key === "Escape" && on && !view.hidden) goBack(); });
