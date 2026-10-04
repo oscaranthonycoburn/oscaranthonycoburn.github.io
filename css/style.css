@@ -726,13 +726,22 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
    1448x1086) is stretched to fill the box (a 1.6% difference in shape, not visible). */
 .vhs-frame { position: relative; width: min(100%, 1000px, calc((100cqh - 160px - env(safe-area-inset-top)) * 1.3848)); aspect-ratio: 565 / 408; }
 .vhs-video { position: absolute; z-index: 0; left: 7.4%; top: 7.6%; width: 85.2%; height: 84.8%; overflow: hidden; background: #000; container-type: size; }
-/* the player is 60px taller top and bottom: the video stays full width, and YouTube's own title bar
-   and logo (drawn in those extra strips) are cut off by the screen's edges */
-.vhs-video iframe, .vhs-video #tvPlayer { position: absolute; left: 0; top: -60px; width: 100%; height: calc(100% + 120px); border: 0; pointer-events: none; }
+/* fishbowl screen: the 16:9 video is scaled up to fill the whole curved screen, corner to corner
+   (the sides and a little of the top and bottom run under the bezel, like a real CRT's overscan,
+   which also hides YouTube's own title bar) */
+.vhs-video iframe, .vhs-video #tvPlayer {
+  position: absolute; left: 50%; top: 50%; height: calc(116% * var(--zoom, 1)); width: auto; aspect-ratio: 16 / 9;
+  transform: translate(-50%, -50%); border: 0; pointer-events: none;
+}
+/* curved glass: scanlines, a soft reflection up top-left, and the image darkening as it bends
+   away toward the corners */
 .vhs-video .crt {
   position: absolute; inset: 0; z-index: 3; pointer-events: none;
-  background: repeating-linear-gradient(180deg, rgba(0,0,0,.2) 0 1px, transparent 1px 3px),
-              radial-gradient(ellipse at center, transparent 62%, rgba(0,0,0,.5) 100%);
+  background:
+    radial-gradient(ellipse 55% 38% at 30% 20%, rgba(255, 255, 255, .09), transparent 70%),
+    radial-gradient(ellipse 75% 70% at 50% 50%, transparent 58%, rgba(0, 0, 0, .28) 82%, rgba(0, 0, 0, .7) 100%),
+    repeating-linear-gradient(180deg, rgba(0, 0, 0, .18) 0 1px, transparent 1px 3px);
+  box-shadow: inset 0 0 6cqh rgba(0, 0, 0, .55);
 }
 .vhs-bezel { position: absolute; z-index: 1; left: -1.868%; top: -4.651%; width: 104.023%; height: 109.808%; max-width: none; pointer-events: none; }
 

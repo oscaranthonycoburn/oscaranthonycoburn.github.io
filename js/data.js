@@ -69,11 +69,14 @@ window.SITE = {
 
   // Videos tab: the four VHS tapes in the room photo (VOL. 1–4, in order). Click one and it goes
   // into the VCR, the view zooms into the TV and the video plays. `id` is the YouTube video ID.
+  // `zoom` (optional) scales the picture up on the TV screen: these placeholders are square album-art
+  // videos with black bars built in, so they're zoomed until the picture reaches the corners.
+  // Real 16:9 videos fill the screen without it.
   videos: [
-    { label: "VOL. 1", title: "Subhuman Nature", id: "himYSGRDR0Q", color: "#d42a2a" },
-    { label: "VOL. 2", title: "Dreams",          id: "V9bUHai0z0o", color: "#3d6db5" },
-    { label: "VOL. 3", title: "Time",            id: "cyxLA8L8PJk", color: "#e0a35c" },
-    { label: "VOL. 4", title: "I Ain't Perfect", id: "Z86v2BupQ64", color: "#5a9a4a" }
+    { label: "VOL. 1", title: "Subhuman Nature", id: "himYSGRDR0Q", zoom: 1.32 },
+    { label: "VOL. 2", title: "Dreams",          id: "V9bUHai0z0o", zoom: 1.32 },
+    { label: "VOL. 3", title: "Time",            id: "cyxLA8L8PJk", zoom: 1.32 },
+    { label: "VOL. 4", title: "I Ain't Perfect", id: "Z86v2BupQ64", zoom: 1.32 }
   ],
 
   // "Ask Oscar" contact form. The address is split so it never appears whole in the page

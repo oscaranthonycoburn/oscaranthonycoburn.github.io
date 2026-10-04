@@ -12,7 +12,7 @@
 
   const room = $("#vhsRoom"), glass = $(".vhs-glass"), led = $("#vcrLed");
   const onBtn = $("#vhsOn"), player = $("#vhsPlayer"), frame = $(".vhs-frame");
-  const menu = $("#vhsMenu"), list = $("#vhsList"), flicker = $("#vhsFlicker");
+  const screen = $(".vhs-video"), menu = $("#vhsMenu"), list = $("#vhsList"), flicker = $("#vhsFlicker");
   const back = $("#vhsBack"), pp = $("#vhsPP"), now = $("#vhsNow"), view = $("#videos");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const hasGsap = !!window.gsap && !reduced;
@@ -119,6 +119,7 @@
     doFlicker();
     setTimeout(() => {
       menu.hidden = true; pp.hidden = false;
+      screen.style.setProperty("--zoom", v.zoom || 1);
       const go = () => yt.loadVideoById(v.id);
       yt && yt.loadVideoById ? go() : ensurePlayer(v.id).then(go);
       busy = false;
@@ -135,15 +136,26 @@
   }
 
   /* ---------- Room <-> frame: the photo's TV screen is zoomed onto the frame's opening ---------- */
-  function zoomTarget() {   // the player must be laid out (not display:none) to measure
+  // Where the frame sits once zoomed in, and the room transform that puts the photo's bezel there.
+  function measure() {   // the player must be laid out (not display:none) to measure
+    gsap.set(frame, { clearProps: "transform" });
     const st = stage.getBoundingClientRect(), fr = frame.getBoundingClientRect();
     const rw = room.offsetWidth, rh = room.offsetHeight;
     const scale = fr.width / (rw * BEZEL.w);           // same shape, so the height matches too
-    return {
-      scale,
-      x: fr.left - st.left - room.offsetLeft - rw * BEZEL.l * scale,
-      y: fr.top - st.top - room.offsetTop - rh * BEZEL.t * scale
-    };
+    const fl = fr.left - st.left, ft = fr.top - st.top;
+    return { scale, fl, ft, rw, rh,
+      x: fl - room.offsetLeft - rw * BEZEL.l * scale,
+      y: ft - room.offsetTop - rh * BEZEL.t * scale };
+  }
+  // Keeps the border glued to the photo's bezel wherever the room is mid-zoom, so the border can
+  // fade in (or out) on top of it at any moment without anything shifting.
+  function track(z) {
+    const s = gsap.getProperty(room, "scale"), x = gsap.getProperty(room, "x"), y = gsap.getProperty(room, "y");
+    gsap.set(frame, {
+      transformOrigin: "0 0", scale: s / z.scale,
+      x: room.offsetLeft + x + z.rw * BEZEL.l * s - z.fl,
+      y: room.offsetTop + y + z.rh * BEZEL.t * s - z.ft
+    });
   }
   function turnOn() {
     if (on || busy) return;
@@ -156,11 +168,16 @@
       ensurePlayer(videos[0] && videos[0].id);       // warm up YouTube while they choose
     };
     if (!hasGsap) { room.style.visibility = "hidden"; done(); return; }
-    gsap.set(player, { autoAlpha: 0 });
-    gsap.timeline({ onComplete: done })
-      .to(room, { ...zoomTarget(), duration: 1.15, ease: "power2.inOut" })
-      .to(player, { autoAlpha: 1, duration: .45, ease: "power1.inOut" }, .72)
-      .to(room, { autoAlpha: 0, duration: .3, ease: "power1.in" }, .9);
+    const z = measure();
+    gsap.set(frame, { opacity: 0 }); gsap.set(back, { autoAlpha: 0 });
+    track(z);
+    // zoom in; the border fades in on top of the photo's bezel (glued to it), then the rest of
+    // the room fades slowly into the site's moving background
+    gsap.timeline({ onComplete: () => { gsap.set(frame, { clearProps: "transform" }); done(); } })
+      .to(room, { scale: z.scale, x: z.x, y: z.y, duration: 1.2, ease: "power2.inOut", onUpdate: () => track(z) }, 0)
+      .to(frame, { opacity: 1, duration: .4, ease: "power1.inOut" }, .4)
+      .to(room, { autoAlpha: 0, duration: 1, ease: "power1.inOut" }, .8)
+      .to(back, { autoAlpha: 1, duration: .3 }, 1.2);
   }
   function turnOff() {
     if (!on || busy) return;
@@ -173,11 +190,15 @@
       onBtn.focus({ preventScroll: true });
     };
     if (!hasGsap) { room.style.visibility = ""; done(); return; }
-    gsap.set(room, { ...zoomTarget(), autoAlpha: 0 });   // re-measured, in case the window changed size
-    gsap.timeline({ onComplete: () => { gsap.set([room, player], { clearProps: "all" }); done(); } })
-      .to(room, { autoAlpha: 1, duration: .3, ease: "power1.out" }, 0)
-      .to(player, { autoAlpha: 0, duration: .4, ease: "power1.inOut" }, .05)
-      .to(room, { x: 0, y: 0, scale: 1, duration: 1.05, ease: "power2.inOut" }, 0);
+    const z = measure();                                 // re-measured, in case the window changed size
+    gsap.set(room, { scale: z.scale, x: z.x, y: z.y, autoAlpha: 0 });
+    track(z);
+    // the room fades back in behind the border, then the border fades off the photo's bezel as it zooms out
+    gsap.timeline({ onComplete: () => { gsap.set([room, frame, back], { clearProps: "all" }); done(); } })
+      .to(back, { autoAlpha: 0, duration: .2 }, 0)
+      .to(room, { autoAlpha: 1, duration: .7, ease: "power1.inOut" }, 0)
+      .to(frame, { opacity: 0, duration: .4, ease: "power1.inOut" }, .75)
+      .to(room, { x: 0, y: 0, scale: 1, duration: 1.2, ease: "power2.inOut", onUpdate: () => track(z) }, .6);
   }
   function goBack() {
     if (busy) return;

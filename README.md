@@ -25,11 +25,11 @@ Home and Library are both in `index.html`, so switching between them never stops
 
 ## Videos (VHS room)
 The Videos tab (`#videos`) is only a photo of a retro room (`assets/vhs/room.webp`: wood TV on a VCR, poster, record, string lights) filling the screen. There's no text and no footer on this tab. On phones the photo crops in around the TV. The TV glass (faint static) and the VCR clock are live pieces laid over the photo.
-- Only the TV itself is clickable (not the room or the VCR). Tapping it zooms in until the photo's black TV bezel lands exactly on the border (`assets/vhs/frame.webp`, the same bezel cut out), which fades in over it, so the TV turns into the border. The site's moving background then shows around it.
-- Inside is a grainy gray menu: VOL. 1–4 with little arrows (arrow keys work too). Pick one: the screen flickers and that video plays, with nothing on top of it. The screen sits behind the border, so nothing pokes past it. The YouTube player is 60px taller top and bottom so YouTube's title bar and logo fall outside the screen.
+- Only the TV itself is clickable (not the room or the VCR). Tapping it zooms in on the TV. The border (`assets/vhs/frame.webp`, the same bezel cut out) is kept glued to the photo's black bezel the whole way, fades in on top of it, and then the rest of the room slowly fades into the site's moving background, so the TV turns into the border. Going back does the same in reverse.
+- Inside is a grainy gray menu: VOL. 1–4 with little arrows (arrow keys work too). Pick one: the screen flickers and that video plays, with nothing on top of it. It's a fishbowl screen: the picture fills it corner to corner (the edges run under the border like a real CRT's overscan, which also hides YouTube's title bar), with curved-glass shading. The screen sits behind the border, so nothing pokes past it.
 - The green VCR readout above the border (top right) pauses and plays. The arrow (top left) goes back: video → menu → room (Esc does the same). When a video ends it returns to the menu.
 - Background music pauses while a video plays; leaving the tab pauses the video.
-- The list is `videos` in `js/data.js`: `label` (shown on the menu), `title` (for screen readers), YouTube `id`.
+- The list is `videos` in `js/data.js`: `label` (shown on the menu), `title` (for screen readers), YouTube `id`, and optional `zoom` (scales the picture up; the placeholders use 1.32 because they're square videos with black bars built in. Real 16:9 videos don't need it).
 - If either image is replaced, re-measure: the photo's black bezel (`BEZEL` in `js/videos.js`, in photo pixels), the TV glass and the clickable TV (`.vhs-glass`, `.vhs-on`), and the border image's bezel edges (the `.vhs-bezel` offsets and the `.vhs-frame` aspect ratio in `css/style.css`).
 
 ## News board
