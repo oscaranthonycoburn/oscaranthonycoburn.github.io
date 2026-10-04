@@ -1,63 +1,59 @@
-/* Videos tab: a retro room. Click a VHS tape and it lifts off the desk, flies to the VCR,
-   tilts and slides into the slot; the TV crackles with static, powers on like an old CRT and
-   plays the video. Tap the TV to pause; ⏏ ejects the tape back to the desk.
-   Tapes come from `videos` in js/data.js. Background music pauses while a tape plays. */
+/* Videos tab: the room photo (assets/vhs/room.webp) with live pieces laid over it.
+   Click a tape: it lifts out of its stack, flies to the VCR and slides into the slot; the VCR
+   reads LOAD -> PLAY, the view zooms into the TV, and the video plays inside the bezel frame
+   (assets/vhs/frame.webp). Tap the video to pause; ⏏ zooms back out and returns the tape.
+   Tapes = `videos` in js/data.js (VOL. 1–4, in the photo's order). */
 (function () {
   const S = window.SITE;
   const $ = (sel, root = document) => root.querySelector(sel);
-  const scene = $("#vhsScene");
-  if (!scene || !window.OCYT) return;
+  const stage = $("#vhsStage");
+  if (!stage || !window.OCYT) return;
 
-  const tapesEl = $("#vhsTapes"), screen = $("#tvScreen"), tv = $("#tv"), vcr = $("#vcr");
-  const slot = $("#vcrSlot"), led = $("#vcrLed"), osd = $("#tvOsd"), eject = $("#vcrEject");
-  const hit = $("#tvHit"), now = $("#vhsNow"), view = $("#videos");
+  const room = $("#vhsRoom"), slot = $("#vcrSlot"), led = $("#vcrLed"), osd = $("#tvOsd");
+  const glass = $(".vhs-glass"), ejectHit = $("#vcrEject"), fade = $(".vhs-fade");
+  const player = $("#vhsPlayer"), playerOsd = $("#vhsOsd"), hit = $("#tvHit"), back = $("#vhsBack");
+  const shelf = $("#vhsShelf"), now = $("#vhsNow"), view = $("#videos");
+  const patches = { left: $(".vhs-patch.left"), right: $(".vhs-patch.right") };
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const hasGsap = !!window.gsap && !reduced;
   const BG = window.OCBg || { duck() {}, unduck() {} };
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const videos = S.videos || [];
+  const videos = (S.videos || []).slice(0, 4);
 
-  /* ---------- Tapes ---------- */
-  tapesEl.innerHTML = videos.map((v, i) => `
-    <button class="vhs" data-tape="${i}" style="--stripe:${esc(v.color || "#d42a2a")}" aria-label="Play ${esc(v.label)}: ${esc(v.title)}">
-      <span class="vhs-label"><span class="vhs-vol">${esc(v.label)}</span><span class="vhs-title">${esc(v.title)}</span></span>
-      <span class="vhs-window" aria-hidden="true"><i></i><i></i></span>
-    </button>`).join("");
-  // Tapes live inside the scene so they can fly anywhere in it.
-  [...tapesEl.children].forEach(t => scene.append(t));
-  tapesEl.remove();
-  const tapes = [...scene.querySelectorAll(".vhs")];
+  // The photo's stacks: [top, bottom] on each side. Taking a bottom tape drops the top one down.
+  const STACKS = { left: [0, 1], right: [2, 3] };
+  const sideOf = i => (i < 2 ? "left" : "right");
+
+  /* ---------- Build the tapes and the shelf buttons ---------- */
+  $("#vhsTapes").innerHTML = [0, 1, 2, 3].map(i => {
+    const v = videos[i];
+    return `<button class="vhs-tape" data-tape="${i}" ${v ? "" : "disabled"} aria-label="${v ? `Play ${esc(v.label)}: ${esc(v.title)}` : "Empty tape"}"></button>`;
+  }).join("");
+  const tapes = [...stage.querySelectorAll(".vhs-tape")];
+  shelf.innerHTML = videos.map((v, i) =>
+    `<button class="vhs-chip" data-chip="${i}" style="--stripe:${esc(v.color || "#d42a2a")}"><i aria-hidden="true"></i>${esc(v.label)} · ${esc(v.title)}</button>`).join("");
 
   /* ---------- State ---------- */
-  let current = null;      // index of the tape in the VCR
-  let busy = false;        // an animation is running
-  let playing = false;
-  let yt = null, ytReady = null;
-  const inserts = new Map();   // tape index -> its insert timeline (reversed to eject)
+  let current = null, busy = false, playing = false;
+  let yt = null, ytReady = null, flight = null, dropTween = null;
 
-  function setOsd(text, { blink = false, hideAfter = 0 } = {}) {
-    clearTimeout(setOsd.t);
-    osd.textContent = text;
-    osd.classList.toggle("blink", blink);
-    osd.hidden = !text;
-    if (hideAfter) setOsd.t = setTimeout(() => { osd.hidden = true; }, hideAfter);
-  }
-  function setLed(text, blink) { led.textContent = text; led.classList.toggle("blink", !!blink); }
+  function setLed(t, blink) { led.textContent = t; led.classList.toggle("blink", !!blink); }
+  function setOsd(t, blink) { osd.textContent = t; osd.classList.toggle("blink", !!blink); }
+  function flash(t, ms = 1600) { clearTimeout(flash.t); playerOsd.textContent = t; if (ms) flash.t = setTimeout(() => { playerOsd.textContent = ""; }, ms); }
   function status() {
+    shelf.querySelectorAll(".vhs-chip").forEach(c => c.classList.toggle("is-current", +c.dataset.chip === current));
     if (current === null) { now.textContent = "No tape in the VCR."; return; }
     const v = videos[current];
-    now.innerHTML = `${playing ? "Now playing" : "Paused"}: <strong>${esc(v.label)} · ${esc(v.title)}</strong>`;
+    now.innerHTML = `${playing ? "Now playing" : player.hidden ? "Loading" : "Paused"}: <strong>${esc(v.label)} · ${esc(v.title)}</strong>`;
   }
-  setOsd("INSERT TAPE", { blink: true });
-  setLed("12:00", true);
+  setLed("12:00", true); setOsd("INSERT TAPE", true);
 
-  /* ---------- TV static ---------- */
-  const cv = $("#tvStatic"), cx = cv.getContext("2d");
-  const img = cx.createImageData(cv.width, cv.height);
-  let staticLoud = false;
+  /* ---------- Static on the TV glass ---------- */
+  const cv = $("#tvStatic"), cx = cv.getContext("2d"), img = cx.createImageData(cv.width, cv.height);
   (function noise() {
-    if (!view.hidden && !screen.classList.contains("is-on")) {
-      const d = img.data, k = staticLoud ? 255 : 150;
-      for (let i = 0; i < d.length; i += 4) { const v = Math.random() * k; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; }
+    if (!view.hidden && player.hidden) {
+      const d = img.data;
+      for (let i = 0; i < d.length; i += 4) { const v = Math.random() * 255; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; }
       cx.putImageData(img, 0, 0);
     }
     requestAnimationFrame(noise);
@@ -70,15 +66,14 @@
     if (ac && ac.state !== "running") ac.resume().catch(() => {});
     return ac;
   }
-  function noiseBuffer(ctx, secs) {
+  function noiseBuf(ctx, secs) {
     const b = ctx.createBuffer(1, ctx.sampleRate * secs, ctx.sampleRate), d = b.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     return b;
   }
   function clunk() {
-    const ctx = audio(); if (!ctx) return;
-    const t = ctx.currentTime;
-    const n = ctx.createBufferSource(); n.buffer = noiseBuffer(ctx, .15);
+    const ctx = audio(); if (!ctx) return; const t = ctx.currentTime;
+    const n = ctx.createBufferSource(); n.buffer = noiseBuf(ctx, .15);
     const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 500;
     const g = ctx.createGain(); g.gain.setValueAtTime(.5, t); g.gain.exponentialRampToValueAtTime(.001, t + .14);
     n.connect(f); f.connect(g); g.connect(ctx.destination); n.start(t);
@@ -87,19 +82,17 @@
     o.connect(og); og.connect(ctx.destination); o.start(t); o.stop(t + .16);
   }
   function whirr(secs = .8) {
-    const ctx = audio(); if (!ctx) return;
-    const t = ctx.currentTime;
+    const ctx = audio(); if (!ctx) return; const t = ctx.currentTime;
     const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.setValueAtTime(45, t); o.frequency.linearRampToValueAtTime(70, t + secs);
     const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 300;
     const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.08, t + .1); g.gain.linearRampToValueAtTime(0, t + secs);
     o.connect(f); f.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + secs);
   }
-  function hiss(secs = .6) {
-    const ctx = audio(); if (!ctx) return;
-    const t = ctx.currentTime;
-    const n = ctx.createBufferSource(); n.buffer = noiseBuffer(ctx, secs);
+  function hiss(secs = .7) {
+    const ctx = audio(); if (!ctx) return; const t = ctx.currentTime;
+    const n = ctx.createBufferSource(); n.buffer = noiseBuf(ctx, secs);
     const f = ctx.createBiquadFilter(); f.type = "highpass"; f.frequency.value = 1800;
-    const g = ctx.createGain(); g.gain.setValueAtTime(.16, t); g.gain.linearRampToValueAtTime(0, t + secs);
+    const g = ctx.createGain(); g.gain.setValueAtTime(.15, t); g.gain.linearRampToValueAtTime(0, t + secs);
     n.connect(f); f.connect(g); g.connect(ctx.destination); n.start(t);
   }
 
@@ -110,112 +103,122 @@
       yt = OCYT.create("tvPlayer", id, {
         onReady: () => resolve(),
         onStateChange: e => {
-          if (e.data === OCYT.PLAYING) {
-            playing = true; BG.duck();
-            screen.classList.add("is-on"); screen.classList.remove("is-off");
-            scene.style.setProperty("--tv-glow", 1); tv.classList.add("is-on");
-            setLed("PLAY"); status();
-            const tape = tapes[current]; tape && tape.classList.add("is-playing");
-          } else if (e.data === OCYT.PAUSED) {
-            playing = false; BG.unduck(); setLed("PAUSE", true); setOsd("PAUSE ❚❚"); status();
-          } else if (e.data === OCYT.ENDED) {
-            playing = false; setOsd("THE END"); setTimeout(() => ejectTape(), 1200);
-          }
+          if (e.data === OCYT.PLAYING) { playing = true; BG.duck(); setLed("PLAY"); status(); }
+          else if (e.data === OCYT.PAUSED) { playing = false; BG.unduck(); setLed("PAUSE", true); flash("PAUSE ❚❚", 0); status(); }
+          else if (e.data === OCYT.ENDED) { playing = false; flash("THE END", 0); setTimeout(() => ejectTape(), 1400); }
         }
       });
     })));
   }
-  function startVideo(i) {
+
+  /* ---------- Room -> TV zoom ---------- */
+  function zoomIn(i) {
     const v = videos[i];
-    if (window.OCDeck && window.OCDeck.playing) window.OCDeck.toggle();   // stop a song on the record
-    BG.duck();
-    staticLoud = true; hiss(.6);
-    setOsd("PLAY ▶  " + v.label, { hideAfter: 3000 });
-    setLed("LOAD", true);
-    const go = () => { yt.loadVideoById(v.id); };
-    yt && yt.loadVideoById ? setTimeout(go, 500) : ensurePlayer(v.id).then(() => setTimeout(go, 300));
-  }
-
-  /* ---------- Insert / eject animations ---------- */
-  function rel(el) { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height, top: r.top }; }
-
-  function insertTape(i) {
-    busy = true;
-    const tape = tapes[i];
-    audio();                                   // unlock sound effects inside the click
-    eject.disabled = true;
-    const done = () => {
-      tape.classList.add("is-in");
-      vcr.classList.add("is-loaded");
-      current = i; busy = false; eject.disabled = false;
-      startVideo(i);
+    const show = () => {
+      player.hidden = false;
+      player.classList.remove("is-in"); void player.offsetWidth; player.classList.add("is-in");
+      flash("PLAY ▶  " + v.label, 2600);
+      const go = () => yt.loadVideoById(v.id);
+      yt && yt.loadVideoById ? go() : ensurePlayer(v.id).then(go);
     };
-    if (reduced || !window.gsap) { clunk(); done(); return; }
-
-    const tr = rel(tape), sr = rel(slot);
-    const s = (sr.w * .96) / tr.w;
-    const tl = gsap.timeline({ onComplete: done, onReverseComplete: () => gsap.set(tape, { clearProps: "transform,opacity,zIndex,clipPath" }) });
-    gsap.set(tape, { zIndex: 40, transformPerspective: 600, transformOrigin: "50% 50%" });
-    tl.to(tape, { y: "-=" + tr.h * .45, rotation: -8, scale: 1.08, duration: .35, ease: "power2.out", onStart: () => whirr(.5) })
-      // fly over the VCR, hovering just above the slot, sized to fit it
-      .to(tape, { x: "+=" + (sr.x - tr.x), y: "+=" + (sr.y - tr.y - tr.h * s * .55 + tr.h * .45), rotation: 0, scale: s, duration: .7, ease: "power3.inOut" })
-      .add(() => vcr.classList.add("is-open"))
-      // tip it back and push it into the slot
-      .to(tape, { rotationX: 75, y: "+=" + tr.h * s * .42, duration: .28, ease: "power2.in" })
-      .to(tape, { y: "+=" + sr.h * .5, opacity: 0, duration: .22, ease: "power1.in", onComplete: () => { clunk(); vcr.classList.remove("is-open"); } });
-    inserts.set(i, tl);
+    if (!hasGsap) { show(); return Promise.resolve(); }
+    return new Promise(res => {
+      gsap.timeline({ onComplete: () => {
+        show();
+        gsap.fromTo(".vhs-frame", { scale: 1.12, opacity: 0 }, { scale: 1, opacity: 1, duration: .55, ease: "expo.out" });
+        res();
+      } })
+        .to(room, { scale: 3.6, duration: 1.05, ease: "power3.in" })
+        .to(fade, { opacity: 1, duration: .35, ease: "power1.in" }, "-=.35");
+    });
+  }
+  function zoomOut() {
+    player.hidden = true;
+    if (!hasGsap) return Promise.resolve();
+    return new Promise(res => {
+      gsap.timeline({ onComplete: res })
+        .to(fade, { opacity: 0, duration: .3 })
+        .to(room, { scale: 1, duration: .8, ease: "power3.out" }, "<");
+    });
   }
 
-  function ejectTape(then) {
+  /* ---------- Tape flights ---------- */
+  function rect(el) { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height }; }
+  function insertTape(i) {
+    busy = true; audio();
+    const tape = tapes[i], side = sideOf(i), [top, bottom] = STACKS[side];
+    patches[side].classList.add("is-on");                       // wall shows where the top tape was
+    if (i === bottom && hasGsap) {                                // the top tape drops into the gap
+      dropTween = gsap.to(tapes[top], { y: tapes[bottom].offsetHeight, duration: .45, delay: .35, ease: "bounce.out" });
+    }
+    const after = () => {
+      tape.style.visibility = "hidden";
+      slot.classList.add("is-loaded"); ejectHit.disabled = false;
+      current = i; status();
+      setLed("LOAD", true); setOsd(""); glass.classList.add("is-loud"); hiss(.8);
+      if (window.OCDeck && window.OCDeck.playing) window.OCDeck.toggle();   // stop a song on the record
+      BG.duck();
+      setTimeout(() => {
+        setLed("PLAY");
+        setTimeout(() => zoomIn(i).then(() => { busy = false; }), 550);
+      }, 750);
+    };
+    if (!hasGsap) { clunk(); after(); return; }
+    const tr = rect(tape), sr = rect(slot), s = (sr.w * .98) / tr.w;
+    gsap.set(tape, { zIndex: 20, transformPerspective: 600, transformOrigin: "50% 50%" });
+    flight = gsap.timeline({ onComplete: after })
+      .to(tape, { y: -tr.h * .7, rotation: i < 2 ? 6 : -6, scale: 1.06, duration: .35, ease: "power2.out", onStart: () => whirr(.5) })
+      .to(tape, { x: sr.x - tr.x, y: sr.y - tr.y - tr.h * s * .55, rotation: 0, scale: s, duration: .7, ease: "power3.inOut" })
+      .to(tape, { rotationX: 72, y: sr.y - tr.y - tr.h * s * .1, duration: .26, ease: "power2.in" })
+      .to(tape, { y: sr.y - tr.y + sr.h * .25, opacity: 0, duration: .2, ease: "power1.in", onComplete: clunk });
+  }
+
+  async function ejectTape(then) {
     if (current === null || busy) return;
     busy = true;
-    const i = current, tape = tapes[i];
+    const i = current, tape = tapes[i], side = sideOf(i), [top, bottom] = STACKS[side];
     try { yt && yt.stopVideo && yt.stopVideo(); } catch (_) {}
-    playing = false; BG.unduck();
-    screen.classList.remove("is-on"); screen.classList.add("is-off");
-    scene.style.setProperty("--tv-glow", 0); tv.classList.remove("is-on");
-    tape.classList.remove("is-playing", "is-in");
-    vcr.classList.remove("is-loaded");
-    setLed("EJECT"); staticLoud = false; whirr(.6);
-    const finish = () => {
-      current = null; busy = false; eject.disabled = true;
-      screen.classList.remove("is-off");
-      setLed("12:00", true); setOsd("INSERT TAPE", { blink: true }); status();
+    playing = false; BG.unduck(); flash("", 0);
+    await zoomOut();
+    glass.classList.remove("is-loud"); setLed("EJECT"); whirr(.6);
+    slot.classList.remove("is-loaded"); ejectHit.disabled = true;
+    const done = () => {
+      if (window.gsap) gsap.set(tape, { clearProps: "transform,opacity,zIndex" });
+      const drop = dropTween; dropTween = null;
+      if (drop) drop.eventCallback("onReverseComplete", () => gsap.set(tapes[top], { clearProps: "transform" })).reverse();
+      setTimeout(() => patches[side].classList.remove("is-on"), drop ? 500 : 0);
+      current = null; busy = false; setLed("12:00", true); setOsd("INSERT TAPE", true); status();
       then && then();
     };
-    const tl = inserts.get(i);
-    if (tl && !reduced && window.gsap) {
-      vcr.classList.add("is-open");
-      setTimeout(() => vcr.classList.remove("is-open"), 400);
-      tl.eventCallback("onReverseComplete", () => { gsap.set(tape, { clearProps: "transform,opacity,zIndex" }); finish(); });
-      tl.timeScale(1.3).reverse();
-    } else finish();
-    inserts.delete(i);
+    tape.style.visibility = "";
+    if (flight && hasGsap) {
+      flight.eventCallback("onComplete", null);
+      flight.eventCallback("onReverseComplete", done);
+      flight.timeScale(1.3).reverse();
+      flight = null;
+    } else done();
   }
 
-  tapes.forEach((tape, i) => tape.addEventListener("click", () => {
-    if (busy) return;
-    if (current === i) { togglePlay(); return; }
+  function pick(i) {
+    if (busy || !videos[i]) return;
+    if (current === i) { if (player.hidden) zoomIn(i); return; }
     if (current !== null) ejectTape(() => insertTape(i));
     else insertTape(i);
-  }));
-  eject.addEventListener("click", () => ejectTape());
-
-  function togglePlay() {
-    if (current === null || !yt || !yt.getPlayerState) return;
-    if (playing) yt.pauseVideo();
-    else { BG.duck(); if (window.OCDeck && window.OCDeck.playing) window.OCDeck.toggle(); setOsd("PLAY ▶", { hideAfter: 1500 }); yt.playVideo(); }
   }
+  tapes.forEach((t, i) => t.addEventListener("click", () => pick(i)));
+  shelf.addEventListener("click", e => { const c = e.target.closest("[data-chip]"); if (c) pick(+c.dataset.chip); });
+  ejectHit.addEventListener("click", () => ejectTape());
+  back.addEventListener("click", () => ejectTape());
   hit.addEventListener("click", () => {
-    if (current === null) { setOsd("PICK A TAPE ▶", { hideAfter: 1800 }); tapes[0] && tapes[0].focus(); return; }
-    togglePlay();
+    if (!yt || !yt.getPlayerState) return;
+    if (playing) yt.pauseVideo();
+    else { BG.duck(); flash("PLAY ▶"); yt.playVideo(); }
   });
 
-  // Leaving the Videos tab pauses the tape (it stays in the VCR).
+  // Leaving the Videos tab pauses the tape (it stays in, zoomed in).
   new MutationObserver(() => { if (view.hidden && playing && yt) yt.pauseVideo(); })
     .observe(view, { attributes: true, attributeFilter: ["hidden"] });
-  // Window resized while a tape is in: forget the old flight path, eject just puts it back.
-  addEventListener("resize", () => {
-    inserts.forEach((tl, i) => { if (i !== current) return; tl.kill(); inserts.delete(i); gsap.set(tapes[i], { clearProps: "transform,opacity,zIndex" }); });
-  });
+  // A resize while a tape is in: drop the old flight path; eject just puts the tape back.
+  addEventListener("resize", () => { if (flight && current !== null) { flight.kill(); flight = null; } });
+  status();
 })();

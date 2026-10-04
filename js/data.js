@@ -67,12 +67,13 @@ window.SITE = {
     { title: "I Ain't Perfect", length: "3:24", id: "Z86v2BupQ64", titleTrack: true }
   ],
 
-  // Videos tab: VHS tapes on the desk. Click one and it goes into the VCR and plays on the TV.
-  // `id` is the YouTube video ID; `color` is the stripe on the tape's label. Add a tape by adding a line.
+  // Videos tab: the four VHS tapes in the room photo (VOL. 1–4, in order). Click one and it goes
+  // into the VCR, the view zooms into the TV and the video plays. `id` is the YouTube video ID.
   videos: [
     { label: "VOL. 1", title: "Subhuman Nature", id: "himYSGRDR0Q", color: "#d42a2a" },
-    { label: "VOL. 2", title: "Dreams",          id: "V9bUHai0z0o", color: "#e0a35c" },
-    { label: "VOL. 3", title: "Time",            id: "cyxLA8L8PJk", color: "#c4622d" }
+    { label: "VOL. 2", title: "Dreams",          id: "V9bUHai0z0o", color: "#3d6db5" },
+    { label: "VOL. 3", title: "Time",            id: "cyxLA8L8PJk", color: "#e0a35c" },
+    { label: "VOL. 4", title: "I Ain't Perfect", id: "Z86v2BupQ64", color: "#5a9a4a" }
   ],
 
   // "Ask Oscar" contact form. The address is split so it never appears whole in the page
