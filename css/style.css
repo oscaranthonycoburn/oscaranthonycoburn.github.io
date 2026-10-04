@@ -747,21 +747,6 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
 .vhs-video:not([data-src="file"]) .vhs-file { display: none; }
 .vhs-video[data-src="file"] iframe { visibility: hidden; }
 
-/* tape static over the picture while YouTube's own buttons are showing (see js/videos.js):
-   the whole screen when a video starts, a rolling tracking band across the middle when it resumes */
-.vhs-cover {
-  --band: max(11%, 46px);
-  position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; image-rendering: pixelated;
-  background: #161616; opacity: 0; pointer-events: none; transition: opacity .35s;
-}
-.vhs-cover.is-full { opacity: 1; transition: none; }
-.vhs-cover.is-band {
-  opacity: 1; transition: none;
-  -webkit-mask-image: linear-gradient(transparent calc(50% - var(--band) - 10px), #000 calc(50% - var(--band)), #000 calc(50% + var(--band)), transparent calc(50% + var(--band) + 10px));
-  mask-image: linear-gradient(transparent calc(50% - var(--band) - 10px), #000 calc(50% - var(--band)), #000 calc(50% + var(--band)), transparent calc(50% + var(--band) + 10px));
-  animation: vhs-track .9s steps(6) infinite;
-}
-@keyframes vhs-track { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-3px); } 60% { transform: translateY(2px); } }
 .vhs-bezel { position: absolute; z-index: 1; left: -1.868%; top: -4.651%; width: 104.023%; height: 109.808%; max-width: none; pointer-events: none; }
 
 /* above the frame: back arrow (left) and the green VCR play/pause readout (right) */

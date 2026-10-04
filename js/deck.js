@@ -6,7 +6,8 @@
      paused it fades back in. */
 (function () {
   const S = window.SITE;
-  const BG = window.OCBg || { duck() {}, unduck() {} };
+  const OCBg = window.OCBg || { duck() {}, unduck() {} };
+  const BG = { duck: () => OCBg.duck("deck"), unduck: () => OCBg.unduck("deck") };
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const deck = $("#deck");

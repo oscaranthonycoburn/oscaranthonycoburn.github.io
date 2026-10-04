@@ -17,7 +17,8 @@
   const back = $("#vhsBack"), pp = $("#vhsPP"), now = $("#vhsNow"), view = $("#videos");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const hasGsap = !!window.gsap && !reduced;
-  const BG = window.OCBg || { duck() {}, unduck() {} };
+  const OCBg = window.OCBg || { duck() {}, unduck() {} };
+  const BG = { duck: () => OCBg.duck("tv"), unduck: () => OCBg.unduck("tv") };
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   let videos = [];
 
@@ -82,14 +83,12 @@
       cx.putImageData(img, 0, 0);
     };
   }
-  const cover = $("#vhsCover");
-  const paintTv = painter($("#tvStatic")), paintMenu = painter($("#vhsGrain")), paintCover = painter(cover);
+  const paintTv = painter($("#tvStatic")), paintMenu = painter($("#vhsGrain"));
   let tick = 0;
   (function loop() {
     if (!view.hidden && tick++ % 2 === 0) {            // ~30fps is plenty for static
       if (!on || busy) paintTv(255);
       if (on && !menu.hidden) paintMenu(150);
-      if (on && cover.className !== "vhs-cover") paintCover(170);
     }
     requestAnimationFrame(loop);
   })();
@@ -123,11 +122,11 @@
   function onPaused() { playing = false; BG.unduck(); setPP(); status(); }
   function onEnded() { playing = false; setTimeout(() => { if (current !== null) toMenu(); }, 600); }
 
-  /* an uploaded file plays in a plain <video>: no YouTube buttons, so no static cover needed */
+  /* an uploaded file plays in a plain <video> (no YouTube buttons at all) */
   const fileEl = $("#vhsFile");
   let src = "yt";                                      // which player the current video uses
   const isFile = () => src === "file" && current !== null;
-  fileEl.addEventListener("playing", () => { if (isFile()) { setCover(null); onPlaying(); } });
+  fileEl.addEventListener("playing", () => { if (isFile()) onPlaying(); });
   fileEl.addEventListener("pause", () => { if (isFile() && !fileEl.ended) onPaused(); });
   fileEl.addEventListener("ended", () => { if (isFile()) onEnded(); });
   fileEl.addEventListener("error", () => { if (isFile() && fileEl.getAttribute("src")) onEnded(); });   // a missing file just goes back to the menu
@@ -139,38 +138,14 @@
         onReady: () => resolve(),
         onStateChange: e => {
           if (current === null || src !== "yt") return;
-          if (e.data === OCYT.PLAYING) {
-            onPlaying();
-            // YouTube shows its own round pause button (and, at the start, the title) for a few
-            // seconds whenever playback starts; it can't be switched off, so it's covered: a new
-            // video stays on tape static, a resumed one gets a VCR tracking band across the middle.
-            if (fresh) { fresh = false; coverFor("full"); } else coverFor("band");
-          }
-          else if (e.data === OCYT.PAUSED) { setCover(null); onPaused(); }   // paused: YouTube shows nothing
-          else if (e.data === OCYT.BUFFERING && cover.className === "vhs-cover") setCover("band");   // hides YouTube's loading ring
+          if (e.data === OCYT.PLAYING) onPlaying();
+          else if (e.data === OCYT.PAUSED) onPaused();
           else if (e.data === OCYT.ENDED) onEnded();
         }
       });
     })));
   }
-  // The static stays until the video has actually played this long (not just a timer), so a slow
-  // start or buffering can't let YouTube's button show through.
-  const COVER_SECS = 4;
-  let fresh = false, coverPoll = 0;
-  function setCover(mode) {
-    clearInterval(coverPoll);
-    cover.className = "vhs-cover" + (mode ? " is-" + mode : "");
-  }
-  function coverFor(mode) {
-    setCover(mode);
-    const now = () => (yt && yt.getCurrentTime ? yt.getCurrentTime() : 0);
-    const t0 = now(), started = Date.now();
-    coverPoll = setInterval(() => {
-      if (now() - t0 >= COVER_SECS || Date.now() - started > 15000) setCover(null);
-    }, 200);
-  }
   function stopVideo() {
-    setCover(null); fresh = false;
     try { yt && yt.stopVideo && yt.stopVideo(); } catch (_) {}
     if (fileEl.getAttribute("src")) { fileEl.pause(); fileEl.removeAttribute("src"); fileEl.load(); }
     if (playing) BG.unduck();
@@ -185,13 +160,12 @@
     const v = videos[i];
     if (!v || busy) return;
     busy = true;
+    BG.duck();                                         // before stopping the record, so the music never sneaks back in
     if (window.OCDeck && window.OCDeck.playing) window.OCDeck.toggle();   // stop a song on the record
-    BG.duck();
     current = i; playing = true; setPP(); status();
     src = v.file ? "file" : "yt";
     screen.dataset.src = src;
     screen.style.setProperty("--zoom", v.zoom || 1);
-    setCover("full");                                  // static until the picture is ready
     if (src === "file") {
       // started right here in the click, so browsers allow it to play with sound
       fileEl.src = v.file;
@@ -201,7 +175,6 @@
     setTimeout(() => {
       menu.hidden = true; pp.hidden = false;
       if (src === "yt") {
-        fresh = true;                                  // static stays until YouTube's start-up buttons are gone
         const go = () => yt.loadVideoById(v.id);
         yt && yt.loadVideoById ? go() : ensurePlayer(v.id).then(go);
       }
@@ -302,7 +275,7 @@
     if (isFile()) { fileEl.paused ? (BG.duck(), fileEl.play().catch(() => {})) : fileEl.pause(); return; }
     if (!yt || !yt.getPlayerState) return;
     if (playing) yt.pauseVideo();
-    else { BG.duck(); setCover("band"); yt.playVideo(); }
+    else { BG.duck(); yt.playVideo(); }
   });
   back.addEventListener("click", goBack);
   document.addEventListener("keydown", e => { if (e.key === "Escape" && on && !view.hidden) goBack(); });

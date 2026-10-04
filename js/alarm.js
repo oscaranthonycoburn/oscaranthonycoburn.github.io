@@ -156,7 +156,7 @@
     running = true;
     const bg = window.OCBg, deck = window.OCDeck;
     if (deck && deck.playing) deck.toggle();     // pause any song video
-    bg && bg.duck();                             // and the background music
+    bg && bg.duck("alarm");                             // and the background music
 
     const el = document.createElement("div");
     el.className = "alarm" + (reduced ? " is-still" : "");
@@ -192,7 +192,7 @@
       stopSound();
       el.classList.remove("is-on");
       setTimeout(() => el.remove(), 500);
-      bg && bg.unduck();
+      bg && bg.unduck("alarm");
       running = false;
     }
     const endTimer = setTimeout(finish, ms);

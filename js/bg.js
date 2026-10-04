@@ -2,8 +2,11 @@
    - Gapless loop via the Web Audio API.
    - Starts as soon as the browser allows: right away if permitted, otherwise at the
      visitor's first tap/click/keypress (browsers block sound before that).
-   - duck(): a song started -> fade out quickly, then actually pause (keeps its place).
-   - unduck(): the song was paused -> resume from the same spot and fade back in.
+   - duck(who): something with sound started (the record deck, the TV, the alarm) -> fade out
+     quickly, then actually pause (keeps its place).
+   - unduck(who): that thing stopped -> once nothing else is holding the music off, resume from
+     the same spot and fade back in. Each player holds its own, so one stopping can't bring the
+     music back while another is still playing.
    - Pauses while the tab is in the background. */
 window.OCBg = (function () {
   const cfg = window.SITE && window.SITE.background;
@@ -18,6 +21,7 @@ window.OCBg = (function () {
   const VOLUME = cfg.volume ?? 0.6;
 
   let source = null, ducked = false, unlocked = false, pauseTimer = null;
+  const holders = new Set();
   const FADE_OUT = 0.35, FADE_IN = 0.8;   // seconds
 
   function fadeTo(v, secs) {
@@ -35,6 +39,7 @@ window.OCBg = (function () {
       pauseTimer = setTimeout(() => { if (ducked) ctx.suspend(); }, FADE_OUT * 1000 + 30);
     } else if (unlocked) {
       const fadeIn = () => {
+        if (ducked) { apply(); return; }   // something started playing while the audio was waking up
         gain.gain.cancelScheduledValues(ctx.currentTime);
         gain.gain.setValueAtTime(Math.min(gain.gain.value, VOLUME), ctx.currentTime);
         fadeTo(VOLUME, FADE_IN);
@@ -82,8 +87,8 @@ window.OCBg = (function () {
   });
 
   return {
-    duck() { if (!ducked) { ducked = true; apply(); } },
-    unduck() { if (ducked) { ducked = false; apply(); } },
+    duck(who = "song") { holders.add(who); if (!ducked) { ducked = true; apply(); } },
+    unduck(who = "song") { holders.delete(who); if (ducked && !holders.size) { ducked = false; apply(); } },
     get ducked() { return ducked; },
     get running() { return ctx.state === "running"; },   // playing (false while paused for a song)
     get level() { return gain.gain.value; }              // current volume (0 while faded out)
