@@ -49,9 +49,11 @@ The "Ask Oscar" section on Home (`#contact`) lets anyone send Oscar a message. H
 ## Search (Google)
 - `index.html` has schema.org structured data (artist, the EP and its 5 tracks, streaming/social links) in a `<script type="application/ld+json">` block, plus a canonical link. Keep it in sync with `js/data.js` when releases change.
 - `sitemap.xml` lists the site; `robots.txt` points to it. Update `<lastmod>` in the sitemap after big changes.
-- Google Search Console: property `https://oscaranthonycoburn.github.io/` (URL-prefix), verified with an HTML meta tag in `index.html`; sitemap submitted there.
+- Google Search Console: verify the whole domain `oscarcoburnmusic.com` with a DNS TXT record in Cloudflare, then submit `sitemap.xml`.
 
 ## Deploy
-Hosted free on GitHub Pages from the `oscaranthonycoburn/oscaranthonycoburn.github.io` repo (branch `main`, root), live at https://oscaranthonycoburn.github.io/. Pushing to `main` republishes in about a minute.
+Hosted free on GitHub Pages from the `oscaranthonycoburn/oscaranthonycoburn.github.io` repo (branch `main`, root), live at **https://oscarcoburnmusic.com/** (set by the `CNAME` file). The old https://oscaranthonycoburn.github.io/ address forwards there. Pushing to `main` republishes in about a minute.
+
+DNS is on Cloudflare (DNS only, not proxied): four `A` records for `@` pointing to GitHub Pages (185.199.108.153, .109.153, .110.153, .111.153) and `www` as a `CNAME` to `oscaranthonycoburn.github.io`.
 
 If the address changes (e.g. a custom domain), update `og:url`, `og:image` and `twitter:image` in `index.html` and `siteUrl` in `js/data.js`. Social previews need absolute URLs.
