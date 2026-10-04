@@ -399,43 +399,50 @@
   </main>
 
   <main id="videos" data-view="videos" hidden>
+    <!-- the room photo, edge to edge at the top; the TV glass and VCR display are live pieces laid exactly over it -->
+    <div class="vhs-stage" id="vhsStage">
+      <div class="vhs-room" id="vhsRoom">
+        <img class="vhs-photo" src="assets/vhs/room.webp" alt="A cozy room: a wood-cased TV on a VCR, the I Ain't Perfect poster and a record on the wall, string lights" width="1733" height="907">
+        <div class="vhs-glass" aria-hidden="true">
+          <canvas class="tv-static" id="tvStatic" width="160" height="120"></canvas>
+          <span class="tv-osd blink" id="tvOsd">TAP TO WATCH</span>
+        </div>
+        <div class="vhs-led blink" id="vcrLed" aria-hidden="true">12:00</div>
+        <div class="vhs-fade" aria-hidden="true"></div>
+      </div>
+      <button class="vhs-on" id="vhsOn" aria-label="Turn on the TV"></button>
+
+      <!-- after the zoom: the bezel frame with the tape menu, then the video, inside -->
+      <div class="vhs-player" id="vhsPlayer" hidden>
+        <div class="vhs-frame">
+          <div class="vhs-video">
+            <div id="tvPlayer"></div>
+            <div class="vhs-menu" id="vhsMenu">
+              <canvas class="vhs-grain" id="vhsGrain" width="200" height="120" aria-hidden="true"></canvas>
+              <p class="vhs-menu-head" aria-hidden="true">SELECT TAPE</p>
+              <ul class="vhs-list" id="vhsList" aria-label="Videos"></ul>
+            </div>
+            <div class="crt" aria-hidden="true"></div>
+            <div class="vhs-flicker" id="vhsFlicker" aria-hidden="true"></div>
+          </div>
+          <img class="vhs-bezel" src="assets/vhs/frame.webp" alt="" width="1672" height="941">
+          <span class="vhs-osd" id="vhsOsd"></span>
+          <button class="vhs-hit" id="tvHit" aria-label="Pause or play" hidden></button>
+        </div>
+        <div class="vhs-ctrls">
+          <button class="btn btn-ghost btn-sm" id="vhsMenuBtn" hidden>◂ Menu</button>
+          <button class="btn btn-ghost btn-sm" id="vhsOff">✕ Back to the room</button>
+        </div>
+      </div>
+    </div>
+
     <section class="section videos">
       <div class="section-head videos-head">
         <p class="kicker">Tapes</p>
         <h1 class="section-title">Videos</h1>
-        <p class="library-intro">Pick a tape and pop it in the VCR. Tap the screen to pause, ⏏ to eject.</p>
+        <p class="library-intro">Tap the TV to turn it on, then pick a tape. Tap the screen to pause.</p>
       </div>
-
-      <div class="vhs-stage" id="vhsStage">
-        <!-- the room photo; tapes, VCR display and TV glass are live pieces laid exactly over it -->
-        <div class="vhs-room" id="vhsRoom">
-          <img class="vhs-photo" src="assets/vhs/room.webp" alt="A cozy room: a wood-cased TV on a VCR, VHS tapes VOL. 1 to 4 stacked on the desk, the I Ain't Perfect poster and a record on the wall, string lights" width="1733" height="907">
-          <i class="vhs-patch left" aria-hidden="true"></i>
-          <i class="vhs-patch right" aria-hidden="true"></i>
-          <div class="vhs-glass" aria-hidden="true">
-            <canvas class="tv-static" id="tvStatic" width="160" height="120"></canvas>
-            <span class="tv-osd" id="tvOsd">INSERT TAPE</span>
-          </div>
-          <div class="vhs-led" id="vcrLed" aria-live="polite">12:00</div>
-          <i class="vhs-slot" id="vcrSlot" aria-hidden="true"></i>
-          <button class="vhs-eject-hit" id="vcrEject" aria-label="Eject tape" disabled></button>
-          <div class="vhs-tapes" id="vhsTapes"></div>
-          <div class="vhs-fade" aria-hidden="true"></div>
-        </div>
-
-        <!-- after the zoom: the bezel frame with the video inside -->
-        <div class="vhs-player" id="vhsPlayer" hidden>
-          <div class="vhs-frame">
-            <div class="vhs-video"><div id="tvPlayer"></div><div class="crt" aria-hidden="true"></div></div>
-            <img class="vhs-bezel" src="assets/vhs/frame.webp" alt="" width="1672" height="941">
-            <span class="vhs-osd" id="vhsOsd"></span>
-            <button class="vhs-hit" id="tvHit" aria-label="Pause or play"></button>
-          </div>
-          <button class="btn btn-ghost btn-sm vhs-back" id="vhsBack">⏏ Eject</button>
-        </div>
-      </div>
-      <div class="vhs-shelf" id="vhsShelf" aria-label="Tapes"></div>
-      <p class="vhs-now" id="vhsNow">No tape in the VCR.</p>
+      <p class="vhs-now" id="vhsNow">The TV is off.</p>
     </section>
   </main>
 

@@ -680,99 +680,108 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .alarm.is-still .alarm-beam, .alarm.is-still .alarm-tape, .alarm.is-still .alarm-spot, .alarm.is-still .alarm-lightbar { display: none; }
 .alarm.is-still .alarm-glow, .alarm.is-still .alarm-banner { animation: none; }
 
-/* ---------- Videos: the room photo with live tapes, VCR display and TV ---------- */
-/* Every overlay is placed in % of the 1733×907 photo, so it lines up at any size. */
-.videos { padding-top: calc(88px + env(safe-area-inset-top)); min-height: 70vh; }
+/* ---------- Videos: the room photo edge to edge; tap the TV to zoom in to the tape menu ---------- */
+/* The stage is at least as tall as a phone needs; the photo covers it, centered on the TV.
+   Overlays are placed in % of the 1733x907 photo, so they line up at any size. */
 .vhs-stage {
-  position: relative; width: 100%; aspect-ratio: 1733 / 907; overflow: hidden; border-radius: var(--radius);
-  background: #000; box-shadow: 0 40px 80px -30px #000, 0 0 0 1px var(--line); isolation: isolate;
+  position: relative; height: clamp(440px, 52.34vw, calc(100svh - 24px)); overflow: hidden;
+  background: #000; container-type: size; isolation: isolate;
 }
-.vhs-room { position: absolute; inset: 0; transform-origin: 47.14% 46.53%; will-change: transform; }
+.vhs-stage::after { content: ""; position: absolute; inset: auto 0 0; height: 14%; z-index: 11; pointer-events: none; background: linear-gradient(transparent, var(--bg)); }
+.vhs-room {
+  --rw: max(100cqw, 100cqh * 1.9107);
+  position: absolute; width: var(--rw); aspect-ratio: 1733 / 907; container-type: inline-size;
+  left: clamp(100cqw - var(--rw), 50cqw - var(--rw) * .473, 0px);
+  top: clamp(100cqh - var(--rw) / 1.9107, 50cqh - var(--rw) / 1.9107 * .465, 0px);
+  transform-origin: 47.3% 46.5%; will-change: transform;
+}
 .vhs-photo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; }
 
-/* a piece of the photo, cut out by coordinates: --l --t --w --h (position) and --sl --st (source) */
-.vhs-tape, .vhs-patch {
-  position: absolute; left: calc(var(--l) * 1%); top: calc(var(--t) * 1%); width: calc(var(--w) * 1%); height: calc(var(--h) * 1%);
-  background-image: url("../assets/vhs/room.webp");
-  background-size: calc(100% * 100 / var(--w)) calc(100% * 100 / var(--h));
-  background-position: calc(var(--sl, var(--l)) / (100 - var(--w)) * 100%) calc(var(--st, var(--t)) / (100 - var(--h)) * 100%);
-}
-.vhs-patch {
-  --w: 25.505; --h: 14.033; display: block; opacity: 0; transition: opacity .25s; pointer-events: none;
-  /* starts 4% above the tape and fades in there, so the borrowed wall blends into the wall around it */
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 28.5%); mask-image: linear-gradient(to bottom, transparent, #000 28.5%);
-}
-.vhs-patch.left  { --l: 1.443;  --t: 63.475; --sl: 1.443;  --st: 53.443; }
-.vhs-patch.right { --l: 73.456; --t: 64.137; --sl: 73.456; --st: 54.434; --w: 24.639; --h: 13.702; }
-.vhs-patch.is-on { opacity: 1; }
-
-.vhs-tape { border: 0; padding: 0; cursor: pointer; border-radius: 3px; z-index: 3; transition: filter .25s, box-shadow .25s; will-change: transform; }
-.vhs-tape[data-tape="0"] { --l: 1.443;  --t: 67.475; --w: 25.505; --h: 10.033; }
-.vhs-tape[data-tape="1"] { --l: 1.443;  --t: 77.508; --w: 25.736; --h: 8.490; }
-.vhs-tape[data-tape="2"] { --l: 73.456; --t: 68.137; --w: 24.639; --h: 9.702; }
-.vhs-tape[data-tape="3"] { --l: 73.456; --t: 77.839; --w: 24.755; --h: 8.379; }
-.vhs-tape:hover, .vhs-tape:focus-visible { filter: brightness(1.15) saturate(1.1); box-shadow: 0 0 0 2px rgba(224, 163, 92, .9), 0 0 24px rgba(255, 180, 90, .6); outline: none; }
-.vhs-tape:disabled { cursor: default; }
-.vhs-tapes { position: absolute; inset: 0; pointer-events: none; }
-.vhs-tapes .vhs-tape { pointer-events: auto; }
-
 /* TV glass: faint static and the on-screen text sit on the photo's dark screen */
-.vhs-glass { position: absolute; left: 33.006%; top: 26.681%; width: 28.275%; height: 39.691%; border-radius: 12% / 15%; overflow: hidden; pointer-events: none; }
-.vhs-glass .tv-static { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; opacity: .16; mix-blend-mode: screen; transition: opacity .3s; }
-.vhs-glass.is-loud .tv-static { opacity: .55; }
-.tv-osd { position: absolute; left: 9%; top: 10%; font-family: "VT323", ui-monospace, monospace; font-size: clamp(10px, 2.1vw, 24px); color: #8dff9a; text-shadow: 0 0 6px rgba(120, 255, 140, .85); letter-spacing: .06em; }
+.vhs-glass { position: absolute; left: 33.18%; top: 27.01%; width: 28.27%; height: 39.14%; border-radius: 12% / 15%; overflow: hidden; pointer-events: none; }
+.vhs-glass .tv-static { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; opacity: .14; mix-blend-mode: screen; transition: opacity .3s; }
+.vhs-stage:hover .tv-static, .vhs-glass.is-loud .tv-static { opacity: .4; }
+.tv-osd { position: absolute; left: 0; right: 0; top: 44%; text-align: center; font-family: "VT323", ui-monospace, monospace; font-size: 2.1cqw; color: #b9b9b9; text-shadow: 0 0 6px rgba(255, 255, 255, .45); letter-spacing: .1em; }
 .tv-osd.blink { animation: osd-blink 1.1s steps(1) infinite; }
 @keyframes osd-blink { 50% { opacity: .2; } }
-/* the VCR display dims only its digits, so the photo's own readout never shows through */
-.vhs-led.blink { animation: led-blink 1.1s steps(1) infinite; }
-@keyframes led-blink { 50% { color: rgba(141, 255, 154, .2); text-shadow: none; } }
 
-/* VCR display: covers the photo's "PAUSE" with a live readout */
+/* VCR display: covers the photo's "PAUSE" with a live readout (only the digits blink) */
 .vhs-led {
-  position: absolute; left: 55.48%; top: 76.4%; width: 8.7%; height: 6%; border-radius: 3px;
+  position: absolute; left: 55.4%; top: 76.2%; width: 8.9%; height: 6.6%; border-radius: 3px;
   display: grid; place-items: center; background: #050806; box-shadow: inset 0 0 6px #000;
-  font-family: "VT323", ui-monospace, monospace; font-size: clamp(11px, 2.35vw, 30px); line-height: 1;
+  font-family: "VT323", ui-monospace, monospace; font-size: 2.3cqw; line-height: 1;
   color: #8dff9a; text-shadow: 0 0 6px rgba(120, 255, 140, .85); letter-spacing: .08em;
 }
-.vhs-slot { position: absolute; left: 33.93%; top: 76.295%; width: 20.6%; height: 5.513%; border-radius: 3px; pointer-events: none; transition: box-shadow .3s; }
-.vhs-slot.is-loaded { box-shadow: 0 0 14px rgba(141, 255, 154, .35), inset 0 0 0 1px rgba(141, 255, 154, .3); }
-.vhs-eject-hit { position: absolute; left: 66.4%; top: 78.3%; width: 3.85%; height: 4.3%; border: 0; border-radius: 4px; background: transparent; cursor: pointer; }
-.vhs-eject-hit:not(:disabled):hover, .vhs-eject-hit:not(:disabled):focus-visible { box-shadow: 0 0 0 2px rgba(141, 255, 154, .7), 0 0 14px rgba(141, 255, 154, .5); outline: none; }
-.vhs-eject-hit:disabled { cursor: default; }
+.vhs-led.blink { animation: led-blink 1.1s steps(1) infinite; }
+@keyframes led-blink { 50% { color: rgba(141, 255, 154, .2); text-shadow: none; } }
 .vhs-fade { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; }
+.vhs-on { position: absolute; inset: 0; z-index: 5; border: 0; background: transparent; cursor: pointer; }
+.vhs-on:focus-visible { outline: 2px solid var(--amber); outline-offset: -6px; }
 
-/* the zoomed-in player: bezel frame with the video in its opening */
-.vhs-player { position: absolute; inset: 0; z-index: 10; display: grid; place-items: center; background: #000; }
+/* zoomed in: the bezel frame, with the tape menu (then the video) in its opening */
+.vhs-player {
+  position: absolute; inset: 0; z-index: 10; background: #000;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  padding: calc(84px + env(safe-area-inset-top)) 16px 7%;
+}
 .vhs-player[hidden] { display: none; }
-.vhs-frame { position: relative; height: 100%; aspect-ratio: 1672 / 941; max-width: 100%; }
-.vhs-video { position: absolute; left: 7.2%; top: 6.8%; width: 85.6%; height: 85%; overflow: hidden; background: #000; border-radius: 4%; }
+.vhs-frame { position: relative; width: min(100%, calc((93cqh - 136px) * 1.7768)); aspect-ratio: 1672 / 941; }
+.vhs-video { position: absolute; left: 7.2%; top: 6.8%; width: 85.6%; height: 85%; overflow: hidden; background: #000; border-radius: 4%; container-type: size; }
 .vhs-video iframe, .vhs-video #tvPlayer { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
 .vhs-video .crt {
-  position: absolute; inset: 0; pointer-events: none;
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
   background: repeating-linear-gradient(180deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px),
               radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,.55) 100%);
   animation: crt-flicker .15s steps(2) infinite;
 }
 @keyframes crt-flicker { 50% { opacity: .9; } }
-.vhs-bezel { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.vhs-osd { position: absolute; left: 11%; top: 11%; z-index: 2; font-family: "VT323", ui-monospace, monospace; font-size: clamp(14px, 2.6vw, 32px); color: #8dff9a; text-shadow: 0 0 8px rgba(120, 255, 140, .85); pointer-events: none; }
-.vhs-hit { position: absolute; left: 7%; top: 7%; width: 86%; height: 85%; z-index: 3; border: 0; background: transparent; cursor: pointer; }
-.vhs-back { position: absolute; right: 12px; top: 12px; z-index: 4; min-height: 36px; padding: 0 14px; font-size: 16px; }
+.vhs-bezel { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.vhs-osd { position: absolute; left: 12%; top: 11%; z-index: 2; font-family: "VT323", ui-monospace, monospace; font-size: clamp(14px, 2.6vw, 32px); color: #d8d8d8; text-shadow: 0 0 8px rgba(255, 255, 255, .6); pointer-events: none; }
+.vhs-hit { position: absolute; left: 7%; top: 7%; width: 86%; height: 85%; z-index: 2; border: 0; background: transparent; cursor: pointer; }
+.vhs-hit[hidden] { display: none; }
 .vhs-player.is-in .vhs-video { animation: crt-on .6s cubic-bezier(.2, .8, .2, 1); }
 @keyframes crt-on { 0% { transform: scale(1, .004); filter: brightness(8); } 45% { transform: scale(1, .02); filter: brightness(5); } 100% { transform: none; filter: none; } }
+.vhs-ctrls { display: flex; gap: 8px; }
+.vhs-ctrls .btn { min-height: 36px; padding: 0 14px; font-size: 15px; }
+.vhs-ctrls [hidden] { display: none; }
 
-/* tape buttons under the room (handy on phones, where the photo is small) */
-.vhs-shelf { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: var(--space-tight); }
-.vhs-chip {
-  display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px;
-  border: 1px solid var(--line); background: var(--glass); color: var(--cream); font-size: 14px; font-weight: 600;
+/* the tape menu: grainy gray screen, pixel text, little gray arrows */
+.vhs-menu {
+  position: absolute; inset: 0; z-index: 2; background: #161616;
+  display: flex; flex-direction: column; justify-content: center; padding: 0 14%;
+  font-family: "VT323", ui-monospace, monospace; color: #9a9a9a; text-shadow: 0 0 2px rgba(255, 255, 255, .35);
+  animation: menu-jitter 4s steps(1) infinite;
 }
-.vhs-chip i { width: 14px; height: 6px; border-radius: 2px; background: var(--stripe); }
-.vhs-chip:hover { background: var(--glass-hi); }
-.vhs-chip.is-current { border-color: color-mix(in srgb, #8dff9a 60%, transparent); }
-.vhs-now { margin: var(--space-tight) 0 0; text-align: center; font-size: 14px; color: var(--muted); }
+.vhs-menu[hidden] { display: none; }
+.vhs-grain { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; opacity: .32; mix-blend-mode: screen; pointer-events: none; }
+.vhs-menu-head { position: relative; margin: 0 0 4cqh; font-size: 7cqh; letter-spacing: .14em; color: #6f6f6f; }
+.vhs-list { position: relative; list-style: none; margin: 0; padding: 0; display: grid; gap: 1.5cqh; }
+.vhs-item {
+  display: flex; align-items: center; gap: .55em; width: 100%; padding: .1em .3em; margin-left: -.3em;
+  border: 0; border-radius: 2px; background: transparent; cursor: pointer; text-align: left;
+  font: inherit; font-size: 11cqh; line-height: 1.05; letter-spacing: .08em; color: inherit; text-shadow: inherit;
+}
+.vhs-item i { width: 0; height: 0; border-style: solid; border-width: .26em 0 .26em .38em; border-color: transparent transparent transparent #7a7a7a; }
+.vhs-item:hover, .vhs-item:focus-visible { color: #e4e4e4; background: rgba(255, 255, 255, .07); outline: none; }
+.vhs-item:hover i, .vhs-item:focus-visible i { border-left-color: #e4e4e4; animation: osd-blink .8s steps(1) infinite; }
+@keyframes menu-jitter { 0%, 100% { transform: none; } 37% { transform: translateX(1px); } 38% { transform: none; } 81% { transform: translate(-1px, 1px); } 82% { transform: none; } }
+
+/* the flicker when a tape is chosen (3 dim flashes, under the 3-per-second limit) */
+.vhs-flicker { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0; background: #bdbdbd; }
+.vhs-flicker.is-on { animation: vhs-flick .75s linear; }
+@keyframes vhs-flick {
+  0% { opacity: 0; } 8% { opacity: .7; } 18% { opacity: .05; } 34% { opacity: .5; }
+  46% { opacity: .1; background: #000; } 66% { opacity: .35; background: #8a8a8a; } 100% { opacity: 0; }
+}
+
+.vhs-now { margin: 0; text-align: center; font-size: 14px; color: var(--muted); }
 .vhs-now strong { color: var(--cream); font-weight: 600; }
-@media (prefers-reduced-motion: reduce) { .vhs-player.is-in .vhs-video { animation: none; } }
+#videos .videos { padding-top: var(--space-tight); text-align: center; }
+#videos .videos .section-head { margin-bottom: var(--space-tight); }
+#videos .videos .library-intro { margin-inline: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .vhs-player.is-in .vhs-video, .vhs-menu, .vhs-flicker.is-on, .tv-osd.blink, .vhs-led.blink { animation: none; }
+}
 
 /* ---------- Toast ---------- */
 .toast {

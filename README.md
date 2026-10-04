@@ -24,10 +24,12 @@ Home and Library are both in `index.html`, so switching between them never stops
 - Clicking an album (hero cover or Library) opens a "Listen on" chooser with Spotify and Apple Music. `links.spotify` and `links.appleMusic` in `js/data.js` are the defaults (also used by the hero buttons and Follow cards); a library entry can set its own `spotify` / `appleMusic`.
 
 ## Videos (VHS room)
-The Videos tab (`#videos`) is a photo of a retro room (`assets/vhs/room.webp`): CRT TV, VCR, four VHS tapes, poster, record and string lights. The tapes, the VCR display and the TV screen are live pieces laid over the photo. Clicking a tape (or its button under the room) lifts it off the stack and slides it into the VCR, which reads LOAD then PLAY. The view then zooms into the TV and the video plays inside the bezel frame (`assets/vhs/frame.webp`). Tap the video to pause; ⏏ Eject (or the VCR's eject button) zooms back out and returns the tape. Background music pauses while a tape plays; leaving the tab pauses the tape.
-- Tapes are `videos` in `js/data.js` (VOL. 1–4, in the photo's order: left top, left bottom, right top, right bottom): `label`, `title`, YouTube `id`, and the button stripe `color`. The labels on the tapes are part of the photo, so there are exactly 4.
-- Overlays are positioned in % of the 1733×907 photo (under "Videos" in `css/style.css`). If the photo is replaced, re-measure those numbers.
-- Code: `js/videos.js`.
+The Videos tab (`#videos`) opens on a photo of a retro room (`assets/vhs/room.webp`: wood TV on a VCR, poster, record, string lights), edge to edge at the top. On phones it crops in around the TV. The TV glass (faint static, "TAP TO WATCH") and the VCR display are live pieces laid over the photo.
+- Tap anywhere on the photo: the view zooms into the TV and the bezel frame (`assets/vhs/frame.webp`) shows a grainy gray menu: VOL. 1–4 with little arrows (arrow keys work too).
+- Pick one: the screen flickers and that video plays. Tap the video to pause. "◂ Menu" goes back to the list, "✕ Back to the room" (or Esc) zooms back out. When a video ends it returns to the menu.
+- Background music pauses while a video plays; leaving the tab pauses the video.
+- The list is `videos` in `js/data.js`: `label` (shown on the menu), `title`, YouTube `id`. Add or remove lines to change it.
+- Overlays are positioned in % of the 1733×907 photo (under "Videos" in `css/style.css`). If the photo is replaced, re-measure them. Code: `js/videos.js`.
 
 ## News board
 The News tab (`#news`) is laid out like a newspaper front page: a dateline, section tabs to filter by category, the top story as a big headline, and the rest in ruled columns. Posts live in `content/news.json`, pinned first, then newest first. Each post has `title`, `category` (Releases, Shows, Videos, Announcements or Behind the Scenes, set in `newsCategories` in `js/data.js`), `date` (YYYY-MM-DD), `body` (blank line between paragraphs), and optional `image`, `link`, `linkLabel`, `pinned`, `hideAfter` (YYYY-MM-DD: the post disappears after that date). A post stays up until it's deleted from the file or its `hideAfter` date passes.
