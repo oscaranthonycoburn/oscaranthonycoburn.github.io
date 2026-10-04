@@ -119,9 +119,14 @@
       if (window.gsap && !reduced) gsap.from(".paper-grid > .story, .paper-empty", { y: 14, opacity: 0, duration: .5, ease: "expo.out", stagger: .05, clearProps: "transform,opacity" });
     });
 
+    // "2026-10-5" and "2026-10-05" both work (pad month/day so dates compare correctly).
+    const normDate = d => {
+      const m = String(d || "").trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      return m ? `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}` : "";
+    };
     function load(data) {
       posts = (data.posts || [])
-        .filter(p => p && p.title && !p.hidden && !(p.hideAfter && p.hideAfter < today))   // gone after its end date
+        .filter(p => p && p.title && !p.hidden && !(normDate(p.hideAfter) && normDate(p.hideAfter) < today))   // gone after its end date
         .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || String(b.date).localeCompare(String(a.date)));
       render();
     }
