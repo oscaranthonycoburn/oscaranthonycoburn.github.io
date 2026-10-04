@@ -688,10 +688,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only the picture */
 .vhs-stage { position: relative; height: max(300px, 100svh); overflow: hidden; container-type: size; isolation: isolate; }
 /* The photo covers the stage, but never zooms in so far that the TV and VCR (with a bit of wall
-   on each side) don't fit across: at most 1/.62 of the screen width (62% of the photo shows).
+   on each side) don't fit across: at most 1/--fit of the screen width (--fit = share of the photo's
+   width that shows; .5 = the whole TV and VCR edge to edge, .62 = plus some wall each side).
    On a tall phone screen that leaves room above and below, filled by a blurred copy of the room. */
 .vhs-room {
-  --rw: max(100cqw, min(100cqh * 1.9107, 100cqw / .62));
+  --rw: max(100cqw, min(100cqh * 1.9107, 100cqw / var(--fit, .5)));
   --rh: calc(var(--rw) / 1.9107);
   position: absolute; width: var(--rw); aspect-ratio: 1733 / 907; container-type: inline-size;
   left: clamp(100cqw - var(--rw), 50cqw - var(--rw) * .5, 0px);
