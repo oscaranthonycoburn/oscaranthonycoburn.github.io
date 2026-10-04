@@ -686,18 +686,31 @@ button { font: inherit; color: inherit; cursor: pointer; }
 #videos { position: relative; }
 .vhs-sr { position: absolute; top: 0; left: 0; margin: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only the picture */
-.vhs-stage { position: relative; height: max(300px, 100svh); overflow: hidden; container-type: size; isolation: isolate; }
+.vhs-stage {
+  position: relative; height: max(300px, 100svh); overflow: hidden; container-type: size; isolation: isolate;
+  /* the room photo, measured in its own pixels (1733x907): shape, the black TV bezel the zoom lands on
+     (also read by js/videos.js), how much of its width may show, and where the TV + VCR sit (y) */
+  --ar: 1.9107; --fit: .5; --cy: .524;
+  --bz-l: .30583; --bz-t: .23815; --bz-w: .32603; --bz-h: .44983; --bz-ar: 1.3848;
+}
+/* phones held upright get the tall photo (assets/vhs/room-tall.webp, 971x1619) */
+@media (orientation: portrait) {
+  .vhs-stage {
+    --ar: .59976; --fit: .78; --cy: .45;
+    --bz-l: .19156; --bz-t: .30204; --bz-w: .51596; --bz-h: .22174; --bz-ar: 1.3955;
+  }
+}
 /* The photo covers the stage, but never zooms in so far that the TV and VCR (with a bit of wall
    on each side) don't fit across: at most 1/--fit of the screen width (--fit = share of the photo's
    width that shows; .5 = the whole TV and VCR edge to edge, .62 = plus some wall each side).
    On a tall phone screen that leaves room above and below, filled by a blurred copy of the room. */
 .vhs-room {
-  --rw: max(100cqw, min(100cqh * 1.9107, 100cqw / var(--fit, .5)));
-  --rh: calc(var(--rw) / 1.9107);
-  position: absolute; width: var(--rw); aspect-ratio: 1733 / 907; container-type: inline-size;
+  --rw: max(100cqw, min(100cqh * var(--ar), 100cqw / var(--fit)));
+  --rh: calc(var(--rw) / var(--ar));
+  position: absolute; width: var(--rw); aspect-ratio: var(--ar); container-type: inline-size;
   left: clamp(100cqw - var(--rw), 50cqw - var(--rw) * .5, 0px);
-  /* the TV + VCR (middle of the photo, y 52%) centered in the space below the menu bar */
-  top: clamp(min(0px, 100cqh - var(--rh)), 32px + 50cqh - var(--rh) * .524, max(0px, 100cqh - var(--rh)));
+  /* the TV + VCR (at --cy of the photo's height) centered in the space below the menu bar */
+  top: clamp(min(0px, 100cqh - var(--rh)), 32px + 50cqh - var(--rh) * var(--cy), max(0px, 100cqh - var(--rh)));
   transform-origin: 0 0; will-change: transform, opacity;
 }
 .vhs-photo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; }
@@ -711,6 +724,7 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
 .vhs-room::before { bottom: calc(100% - 1px); -webkit-mask-image: linear-gradient(transparent, #000 70%); mask-image: linear-gradient(transparent, #000 70%); }
 .vhs-room::after { top: calc(100% - 1px); filter: blur(14px) brightness(.6); -webkit-mask-image: linear-gradient(#000 30%, transparent); mask-image: linear-gradient(#000 30%, transparent); }
 @media (orientation: portrait) {
+  .vhs-room::before, .vhs-room::after { background-image: url("../assets/vhs/room-tall.webp"); }
   /* soften the photo's top and bottom edges into the blurred continuation */
   .vhs-photo {
     -webkit-mask-image: linear-gradient(transparent, #000 5%, #000 95%, transparent);
@@ -735,6 +749,12 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
 /* only the TV cabinet is clickable (not the room or the VCR) */
 .vhs-on { position: absolute; left: 28.4%; top: 20.4%; width: 43.6%; height: 51.5%; z-index: 5; border: 0; border-radius: 3% / 4%; background: transparent; cursor: pointer; }
 .vhs-on:focus-visible { outline: 2px solid var(--amber); outline-offset: -6px; }
+/* the same pieces placed on the tall photo (971x1619 px) */
+@media (orientation: portrait) {
+  .vhs-glass { left: 23.27%; top: 31.75%; width: 44.7%; height: 19.33%; }
+  .vhs-led { left: 57.47%; top: 55.71%; width: 15.45%; height: 3.58%; font-size: 3.6cqw; }
+  .vhs-on { left: 15.45%; top: 28.29%; width: 69.2%; height: 25.76%; }
+}
 
 /* zoomed in: the bezel frame on the moving background; the screen sits behind the bezel */
 .vhs-player {
@@ -746,7 +766,7 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
 /* The frame box is exactly the photo's black TV bezel (565x408 px of the photo), so the zoom can land
    the photo's bezel on it pixel for pixel. The border image's own bezel (26..1418 x 46..1035 of its
    1448x1086) is stretched to fill the box (a 1.6% difference in shape, not visible). */
-.vhs-frame { position: relative; width: min(100%, 1000px, calc((100cqh - 160px - env(safe-area-inset-top)) * 1.3848)); aspect-ratio: 565 / 408; }
+.vhs-frame { position: relative; width: min(100%, 1000px, calc((100cqh - 160px - env(safe-area-inset-top)) * var(--bz-ar))); aspect-ratio: var(--bz-ar); }
 .vhs-video { position: absolute; z-index: 0; left: 7.4%; top: 7.6%; width: 85.2%; height: 84.8%; overflow: hidden; background: #000; container-type: size; }
 /* fishbowl screen: the 16:9 video is scaled to just fill the whole curved screen, corner to corner
    (the sides run under the bezel, like a real CRT's overscan) */

@@ -22,9 +22,12 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   let videos = [];
 
-  // The photo's black TV bezel, measured in pixels of the 1733x907 photo. The .vhs-frame box is
-  // this bezel's shape, and the border image fills it.
-  const BEZEL = { l: 530 / 1733, t: 216 / 907, w: 565 / 1733, h: 408 / 907 };
+  // The photo's black TV bezel as fractions of the photo (--bz-* in css/style.css; the wide photo
+  // and the tall phone photo each have their own). The .vhs-frame box is this bezel's shape.
+  function bezel() {
+    const cs = getComputedStyle(stage), v = n => parseFloat(cs.getPropertyValue(n));
+    return { l: v("--bz-l"), t: v("--bz-t"), w: v("--bz-w"), h: v("--bz-h") };
+  }
 
   /* ---------- The menu list (content/videos.json) ---------- */
   // Any YouTube link (watch?v=, youtu.be/, /shorts/, /embed/, /live/) or a bare 11-character ID.
@@ -197,9 +200,10 @@
     gsap.set(frame, { clearProps: "transform" });
     const st = stage.getBoundingClientRect(), fr = frame.getBoundingClientRect();
     const rw = room.offsetWidth, rh = room.offsetHeight;
+    const BEZEL = bezel();
     const scale = fr.width / (rw * BEZEL.w);           // same shape, so the height matches too
     const fl = fr.left - st.left, ft = fr.top - st.top;
-    return { scale, fl, ft, rw, rh,
+    return { scale, fl, ft, rw, rh, BEZEL,
       x: fl - room.offsetLeft - rw * BEZEL.l * scale,
       y: ft - room.offsetTop - rh * BEZEL.t * scale };
   }
@@ -209,8 +213,8 @@
     const s = gsap.getProperty(room, "scale"), x = gsap.getProperty(room, "x"), y = gsap.getProperty(room, "y");
     gsap.set(frame, {
       transformOrigin: "0 0", scale: s / z.scale,
-      x: room.offsetLeft + x + z.rw * BEZEL.l * s - z.fl,
-      y: room.offsetTop + y + z.rh * BEZEL.t * s - z.ft
+      x: room.offsetLeft + x + z.rw * z.BEZEL.l * s - z.fl,
+      y: room.offsetTop + y + z.rh * z.BEZEL.t * s - z.ft
     });
   }
   function turnOn() {
