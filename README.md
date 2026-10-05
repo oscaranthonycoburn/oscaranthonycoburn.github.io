@@ -64,7 +64,7 @@ The "Ask Oscar" section on Home (`#contact`) lets anyone send Oscar a message. H
 - Google Search Console: verify the whole domain `oscarcoburnmusic.com` with a DNS TXT record in Cloudflare, then submit `sitemap.xml`.
 
 ## Deploy
-`index.html` loads the CSS and JS with a version tag (`?v=20261004f`). GitHub Pages lets browsers keep files for 10 minutes, so change that tag (all of them, same value) whenever CSS/JS changes and phones will fetch the new files right away.
+`index.html` loads the CSS and JS with a version tag (`?v=20261004g`). GitHub Pages lets browsers keep files for 10 minutes, so change that tag (all of them, same value) whenever CSS/JS changes and phones will fetch the new files right away.
 
 Hosted free on GitHub Pages from the `oscaranthonycoburn/oscaranthonycoburn.github.io` repo (branch `main`, root), live at **https://oscarcoburnmusic.com/** (set by the `CNAME` file). The old https://oscaranthonycoburn.github.io/ address forwards there. Pushing to `main` republishes in about a minute.
 

@@ -148,6 +148,7 @@
      corner to corner, cropping only what it has to. "Whole picture" shows all of it instead, with
      black around it. A Zoom number (Pages CMS) overrides both. */
   const FULL = { x: 0, y: 0, w: 1, h: 1 };
+  const YT_PAD = 64;                                   // px of YouTube player kept off-screen above and below
   let fitRect = FULL;                                  // where the picture sits inside the frame (fractions)
   // Finds the picture inside an image or video frame by trimming near-black bars off the edges.
   function findPicture(src, sw, sh) {
@@ -206,9 +207,14 @@
     const s = item.zoom ? Math.max(Sw / fw, Sh / fh) * item.zoom
       : whole ? Math.min(Sw / pw, Sh / ph)
       : Math.max(Sw / pw, Sh / ph) * 1.01;             // a hair of overscan so no edge peeks through
+    // YouTube draws its title, channel name and logo along the top and bottom of its player (and on
+    // phones it ignores the setting that hides them), so its player gets an extra strip above and
+    // below the picture: YouTube centers the video in the taller player, and those strips (with
+    // the title and logo in them) sit outside the screen.
+    const pad = src === "yt" ? YT_PAD : 0;
     Object.assign(el.style, {
-      width: fw * s + "px", height: fh * s + "px",
-      left: Sw / 2 - (r.x + r.w / 2) * fw * s + "px", top: Sh / 2 - (r.y + r.h / 2) * fh * s + "px"
+      width: fw * s + "px", height: fh * s + 2 * pad + "px",
+      left: Sw / 2 - (r.x + r.w / 2) * fw * s + "px", top: Sh / 2 - (r.y + r.h / 2) * fh * s - pad + "px"
     });
     el.classList.add("is-fitted");
   }
