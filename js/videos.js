@@ -144,7 +144,7 @@
   }
   function onPlaying() { playing = true; BG.duck(); setPP(); status(); unlockPP(); }
   function onPaused() { playing = false; BG.unduck(); setPP(); status(); unlockPP(); }
-  function onEnded() { playing = false; setTimeout(() => { if (current !== null) toMenu(); }, 600); }
+  function onEnded() { playing = false; if (current !== null) toMenu(); }   // straight back (YouTube's end screen never shows)
 
   /* an uploaded file plays in a plain <video> (no YouTube buttons at all) */
   const fileEl = $("#vhsFile");
@@ -278,6 +278,7 @@
   }
   function stopVideo() {
     clearTimeout(ppTimer);
+    screen.dataset.src = "";                           // hide the player right away (no YouTube cover)
     try { yt && yt.stopVideo && yt.stopVideo(); } catch (_) {}
     if (fileEl.getAttribute("src")) { fileEl.pause(); fileEl.removeAttribute("src"); fileEl.load(); }
     imageEl.removeAttribute("src");
@@ -329,11 +330,13 @@
     setTimeout(show, reduced ? 0 : 380);
   }
   function toMenu() {
+    // the static menu comes back over the picture right away (a stopped YouTube video shows its
+    // cover with a red play button), and the flicker plays over it
+    menu.hidden = false; moreHint();
     stopVideo(); status();
     pp.hidden = true;
     doFlicker();
     setTimeout(() => {
-      menu.hidden = false; moreHint();
       const first = list.querySelector(".vhs-item"); first && first.focus({ preventScroll: true });
     }, reduced ? 0 : 380);
   }
