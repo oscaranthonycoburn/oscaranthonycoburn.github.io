@@ -777,12 +777,15 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
    1448x1086) is stretched to fill the box (a 1.6% difference in shape, not visible). */
 .vhs-frame { position: relative; width: min(100%, 1000px, calc((100cqh - 160px - env(safe-area-inset-top)) * var(--bz-ar))); aspect-ratio: var(--bz-ar); }
 .vhs-video { position: absolute; z-index: 0; left: 7.4%; top: 7.6%; width: 85.2%; height: 84.8%; overflow: hidden; background: #000; container-type: size; }
-/* fishbowl screen: the 16:9 video is scaled to just fill the whole curved screen, corner to corner
-   (the sides run under the bezel, like a real CRT's overscan) */
+/* fishbowl screen: js/videos.js sizes and places the player (or video file) so the actual picture
+   fills the curved screen corner to corner: it measures the video's shape and any black bars built
+   into it ("Auto"), or shows the whole picture ("Whole picture"), or uses a set zoom. These are the
+   starting sizes before that measurement; the size changes glide. */
 .vhs-video iframe, .vhs-video #tvPlayer {
-  position: absolute; left: 50%; top: 50%; height: calc(103% * var(--zoom, 1)); width: auto; aspect-ratio: 16 / 9;
+  position: absolute; left: 50%; top: 50%; height: 101%; width: auto; aspect-ratio: 16 / 9;
   transform: translate(-50%, -50%); border: 0; pointer-events: none;
 }
+.vhs-video iframe.is-fitted, .vhs-video #tvPlayer.is-fitted, .vhs-video .vhs-file.is-fitted { transform: none; aspect-ratio: auto; transition: width .45s var(--ease), height .45s var(--ease), left .45s var(--ease), top .45s var(--ease); }
 /* curved glass: scanlines, a soft reflection up top-left, and the image darkening as it bends
    away toward the corners */
 .vhs-video .crt {
@@ -794,7 +797,8 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
   box-shadow: inset 0 0 6cqh rgba(0, 0, 0, .55);
 }
 /* an uploaded video file (instead of YouTube): fills the screen the same way */
-.vhs-file { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(var(--zoom, 1)); pointer-events: none; background: #000; }
+.vhs-file { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; background: #000; }
+.vhs-file.is-fitted { object-fit: fill; }
 .vhs-video:not([data-src="file"]) .vhs-file { display: none; }
 .vhs-video:not([data-src="yt"]) iframe { visibility: hidden; }
 /* a photo (e.g. from a secret code): shown whole, with a blurred copy of itself filling the corners */

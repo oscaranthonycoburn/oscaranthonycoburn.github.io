@@ -55,7 +55,8 @@
       .then(r => (r.ok ? r.json() : null))
       .then(d => {
         const item = v => ({ title: String(v.title || "").trim(), image: String(v.image || "").trim(),
-          file: String(v.file || "").trim(), id: ytId(v.video), zoom: +v.zoom || 1 });
+          file: String(v.file || "").trim(), id: ytId(v.video), zoom: +v.zoom || 0,
+          fit: /whole/i.test(v.fit || "") ? "whole" : "auto" });
         secrets = ((d && d.secrets) || [])
           .map(v => ({ ...item(v), code: String(v.code || "").replace(/\D/g, ""), title: String(v.title || "").trim() || "Secret" }))
           .filter(v => v.code.length === 4 && (v.image || v.file || v.id));
@@ -140,6 +141,107 @@
   fileEl.addEventListener("ended", () => { if (isFile()) onEnded(); });
   fileEl.addEventListener("error", () => { if (isFile() && fileEl.getAttribute("src")) onEnded(); });   // a missing file just goes back to the menu
 
+  /* ---------- Fitting the picture to the screen ----------
+     A video's real picture can be smaller than its frame: a square or vertical video inside a 16:9
+     YouTube player, or black bars baked into the video itself. Auto finds the picture (from the
+     YouTube thumbnail, or from the uploaded file's own frames) and scales it to fill the screen
+     corner to corner, cropping only what it has to. "Whole picture" shows all of it instead, with
+     black around it. A Zoom number (Pages CMS) overrides both. */
+  const FULL = { x: 0, y: 0, w: 1, h: 1 };
+  let fitRect = FULL;                                  // where the picture sits inside the frame (fractions)
+  // Finds the picture inside an image or video frame by trimming near-black bars off the edges.
+  function findPicture(src, sw, sh) {
+    try {
+      const W = 160, H = Math.max(1, Math.round(W * sh / sw));
+      const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+      const cx = cv.getContext("2d", { willReadFrequently: true }); cx.drawImage(src, 0, 0, W, H);
+      const d = cx.getImageData(0, 0, W, H).data;
+      const lum = (x, y) => { const i = (y * W + x) * 4; return .299 * d[i] + .587 * d[i + 1] + .114 * d[i + 2]; };
+      const isBar = (n, at) => { let sum = 0, max = 0; for (let k = 0; k < n; k++) { const l = at(k); sum += l; if (l > max) max = l; } return sum / n < 20 && max < 60; };
+      let x0 = 0, x1 = W - 1, y0 = 0, y1 = H - 1;
+      while (x0 < x1 && isBar(H, y => lum(x0, y))) x0++;
+      while (x1 > x0 && isBar(H, y => lum(x1, y))) x1--;
+      while (y0 < y1 && isBar(W, x => lum(x, y0))) y0++;
+      while (y1 > y0 && isBar(W, x => lum(x, y1))) y1--;
+      const r = { x: x0 / W, y: y0 / H, w: (x1 - x0 + 1) / W, h: (y1 - y0 + 1) / H };
+      if (r.w * r.h < .2) return null;                 // mostly black (a dark or fading frame): no idea
+      // ignore slivers (compression edges), keep real bars
+      if (r.x < .02) { r.w += r.x; r.x = 0; } if (1 - r.x - r.w < .02) r.w = 1 - r.x;
+      if (r.y < .02) { r.h += r.y; r.y = 0; } if (1 - r.y - r.h < .02) r.h = 1 - r.y;
+      return r;
+    } catch (_) { return null; }                       // e.g. a file from another site (can't read its pixels)
+  }
+  // YouTube: the picture's place inside the 16:9 player, from the video's thumbnail (cached per video)
+  const ytFits = {};
+  function ytPicture(id) {
+    if (ytFits[id]) return ytFits[id];
+    const load = q => new Promise(res => {
+      const im = new Image(); im.crossOrigin = "anonymous";
+      im.onload = () => res(im); im.onerror = () => res(null);
+      im.src = `https://i.ytimg.com/vi/${id}/${q}.jpg`;
+    });
+    return (ytFits[id] = (async () => {
+      const big = await load("maxresdefault");         // a 16:9 frame, same shape as the player
+      if (big && big.naturalWidth > 200) return findPicture(big, big.naturalWidth, big.naturalHeight) || FULL;
+      // no big thumbnail: the 4:3 one only tells the picture's shape; YouTube centers it in the player
+      const hq = await load("hqdefault");
+      const r = hq && findPicture(hq, hq.naturalWidth, hq.naturalHeight);
+      if (!r) return FULL;
+      const a = (r.w * hq.naturalWidth) / (r.h * hq.naturalHeight), f = 16 / 9;
+      return a < f ? { x: (1 - a / f) / 2, y: 0, w: a / f, h: 1 } : { x: 0, y: (1 - f / a) / 2, w: 1, h: f / a };
+    })());
+  }
+  // Sizes and places the player/file so the picture fills (or, "whole", fits inside) the screen.
+  function layout() {
+    if (!item || src === "image") return;
+    const el = src === "file" ? fileEl : (screen.querySelector("iframe") || $("#tvPlayer"));
+    const fw = src === "file" ? fileEl.videoWidth : 16, fh = src === "file" ? fileEl.videoHeight : 9;
+    if (!el || !fw || !fh) return;
+    const Sw = screen.clientWidth, Sh = screen.clientHeight, r = fitRect;
+    const pw = r.w * fw, ph = r.h * fh;                // the picture, in frame units
+    // Auto fills the screen, unless that would cut off more than 40% of the picture (a vertical
+    // video, or a very wide one): then it shows the whole picture instead
+    const pa = pw / ph, sa = Sw / Sh, cut = 1 - Math.min(pa, sa) / Math.max(pa, sa);
+    const whole = item.fit === "whole" || cut > .4;
+    const s = item.zoom ? Math.max(Sw / fw, Sh / fh) * item.zoom
+      : whole ? Math.min(Sw / pw, Sh / ph)
+      : Math.max(Sw / pw, Sh / ph) * 1.01;             // a hair of overscan so no edge peeks through
+    Object.assign(el.style, {
+      width: fw * s + "px", height: fh * s + "px",
+      left: Sw / 2 - (r.x + r.w / 2) * fw * s + "px", top: Sh / 2 - (r.y + r.h / 2) * fh * s + "px"
+    });
+    el.classList.add("is-fitted");
+  }
+  function unfit() {
+    fitRect = FULL;
+    [fileEl, screen.querySelector("iframe") || $("#tvPlayer")].forEach(el => {
+      if (!el) return; el.classList.remove("is-fitted"); ["width", "height", "left", "top"].forEach(k => el.style.removeProperty(k));
+    });
+  }
+  function fitYouTube(v) {
+    fitRect = FULL; layout();
+    if (v.zoom || !v.id) return;
+    ytPicture(v.id).then(r => { if (item === v) { fitRect = r; layout(); } });
+  }
+  // an uploaded file: look at a couple of its frames once it's playing (a fade from black is skipped)
+  let fileChecks = [];
+  function fitFile(v) {
+    fileChecks.forEach(clearTimeout); fileChecks = [];
+    const look = () => {
+      if (item !== v || v.zoom || !fileEl.videoWidth) return;
+      const r = findPicture(fileEl, fileEl.videoWidth, fileEl.videoHeight);
+      if (!r) return;
+      // keep the larger picture across checks, so a dark moment never zooms in further
+      if (fitRect === FULL || r.w * r.h >= fitRect.w * fitRect.h) { fitRect = r; layout(); }
+    };
+    fileEl.addEventListener("loadedmetadata", () => { if (item === v) { fitRect = FULL; layout(); } }, { once: true });
+    fileEl.addEventListener("playing", () => {
+      if (item !== v) return;
+      fileChecks = [setTimeout(look, 700), setTimeout(look, 2500), setTimeout(look, 6000)];
+    }, { once: true });
+  }
+  addEventListener("resize", () => { if (on && item) layout(); });
+
   function ensurePlayer(id) {
     if (ytReady) return ytReady;
     return (ytReady = OCYT.load().then(() => new Promise(resolve => {
@@ -158,6 +260,7 @@
     try { yt && yt.stopVideo && yt.stopVideo(); } catch (_) {}
     if (fileEl.getAttribute("src")) { fileEl.pause(); fileEl.removeAttribute("src"); fileEl.load(); }
     imageEl.removeAttribute("src");
+    fileChecks.forEach(clearTimeout); unfit();
     if (playing) BG.unduck();
     playing = false; current = null; item = null;
   }
@@ -174,7 +277,7 @@
     current = idx; item = v;
     src = v.image ? "image" : v.file ? "file" : "yt";
     screen.dataset.src = src;
-    screen.style.setProperty("--zoom", v.zoom || 1);
+    screen.style.setProperty("--zoom", v.zoom || 1);   // (photos)
     if (src === "image") {                             // a photo: no sound, so the music keeps playing
       playing = false;
       imageEl.src = v.image;
@@ -186,6 +289,7 @@
     }
     status();
     if (src === "file") {
+      fitFile(v);
       // started right here in the click, so browsers allow it to play with sound
       fileEl.src = v.file;
       fileEl.play().catch(() => { if (isFile()) { playing = false; setPP(); } });
@@ -193,7 +297,7 @@
     const show = () => {
       menu.hidden = true; pp.hidden = src === "image";
       if (src === "yt") {
-        const go = () => yt.loadVideoById(v.id);
+        const go = () => { yt.loadVideoById(v.id); fitYouTube(v); };
         yt && yt.loadVideoById ? go() : ensurePlayer(v.id).then(go);
       }
       if (!instant) busy = false;

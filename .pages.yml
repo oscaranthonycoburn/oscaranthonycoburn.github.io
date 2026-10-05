@@ -100,10 +100,16 @@ content:
               media: videos
               categories: [video]
             description: Upload an MP4 instead of a YouTube link (no YouTube buttons ever show). Keep it small, under 25 MB (720p is plenty on the TV). If both are filled in, the file is used.
+          - name: fit
+            label: Fit on the TV
+            type: select
+            options:
+              values: [Auto, Whole picture]
+            description: Auto (or leave empty) finds the video's real picture, even with black bars built in or a square video, and fills the TV corner to corner, cutting off only what it has to. If that would cut off a lot (vertical videos like Shorts, or very wide ones) it shows the whole picture instead. Whole picture always shows all of it, with black around it.
           - name: zoom
             label: Zoom (optional)
             type: number
-            description: Leave EMPTY for normal videos. Only for videos with black bars built in (like square album-art videos), 1.44 zooms in until the picture fills the TV.
+            description: Leave EMPTY to use the Fit setting above. A number sets the size by hand instead (1 = the video's frame just fills the TV, 1.3 = 30% bigger).
       - name: secrets
         label: Secret codes (the VCR clock)
         type: object
