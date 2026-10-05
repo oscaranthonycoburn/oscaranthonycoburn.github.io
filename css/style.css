@@ -190,7 +190,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .cover-badge svg { width: 18px; height: 18px; }
 .cover-link:hover .cover-badge, .cover-link:focus-visible .cover-badge { opacity: 1; transform: translate(-50%, 0); }
-@media (hover: none) { .cover-badge { opacity: 1; transform: translate(-50%, 0); } }
+/* phones and tablets (no hover): no badge on the cover; tapping it still opens the "Listen on" chooser */
+@media (hover: none) { .cover-badge { display: none; } }
 
 /* light streaks: horizontal smears that echo the motion-blurred photo */
 .streaks { position: absolute; inset: 0; mix-blend-mode: screen; pointer-events: none; }
