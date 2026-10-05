@@ -820,6 +820,7 @@ body[data-view="videos"] .footer { display: none; }   /* the Videos tab is only 
 }
 .vhs-pp:hover, .vhs-pp:focus-visible { border-color: #3c6b44; outline: none; }
 .vhs-pp[hidden] { display: none; }
+.vhs-pp:disabled { opacity: .45; cursor: default; animation: none; }   /* locked until the video starts */
 
 /* the tape menu: grainy gray screen, pixel text, little gray arrows */
 .vhs-menu {

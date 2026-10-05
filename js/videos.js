@@ -128,8 +128,22 @@
 
   /* ---------- Video ---------- */
   // What happens when playback starts/pauses/ends, from either player.
-  function onPlaying() { playing = true; BG.duck(); setPP(); status(); }
-  function onPaused() { playing = false; BG.unduck(); setPP(); status(); }
+  // The green PLAY/PAUSE stays locked until the video has really started, and after each press until
+  // the player has really done it (pressing it while YouTube was still loading, or rapidly, used to
+  // freeze it). If a phone blocks the video from starting, it unlocks after a few seconds anyway.
+  let ppTimer = 0;
+  function lockPP() {
+    clearTimeout(ppTimer); pp.disabled = true;
+    ppTimer = setTimeout(() => { if (current !== null && pp.disabled) { pp.disabled = false; if (!isPlayingNow()) { playing = false; setPP(); } } }, 6000);
+  }
+  function unlockPP() { clearTimeout(ppTimer); pp.disabled = false; }
+  function isPlayingNow() {                            // what the player is really doing (not what we last asked)
+    if (src === "file") return !fileEl.paused && !fileEl.ended;
+    const st = yt && yt.getPlayerState ? yt.getPlayerState() : -1;
+    return st === OCYT.PLAYING || st === OCYT.BUFFERING;
+  }
+  function onPlaying() { playing = true; BG.duck(); setPP(); status(); unlockPP(); }
+  function onPaused() { playing = false; BG.unduck(); setPP(); status(); unlockPP(); }
   function onEnded() { playing = false; setTimeout(() => { if (current !== null) toMenu(); }, 600); }
 
   /* an uploaded file plays in a plain <video> (no YouTube buttons at all) */
@@ -263,6 +277,7 @@
     })));
   }
   function stopVideo() {
+    clearTimeout(ppTimer);
     try { yt && yt.stopVideo && yt.stopVideo(); } catch (_) {}
     if (fileEl.getAttribute("src")) { fileEl.pause(); fileEl.removeAttribute("src"); fileEl.load(); }
     imageEl.removeAttribute("src");
@@ -302,6 +317,7 @@
     }
     const show = () => {
       menu.hidden = true; pp.hidden = src === "image";
+      if (src !== "image") lockPP();
       if (src === "yt") {
         const go = () => { yt.loadVideoById(v.id); fitYouTube(v); };
         yt && yt.loadVideoById ? go() : ensurePlayer(v.id).then(go);
@@ -442,10 +458,12 @@
     e.preventDefault();
   });
   pp.addEventListener("click", () => {
-    if (current === null) return;
-    if (isFile()) { fileEl.paused ? (BG.duck(), fileEl.play().catch(() => {})) : fileEl.pause(); return; }
-    if (!yt || !yt.getPlayerState) return;
-    if (playing) yt.pauseVideo();
+    if (current === null || pp.disabled) return;
+    const pause = isPlayingNow();
+    if (!isFile() && !(yt && yt.getPlayerState)) return;
+    lockPP();                                          // until the player reports it has played/paused
+    if (isFile()) { pause ? fileEl.pause() : (BG.duck(), fileEl.play().catch(() => unlockPP())); return; }
+    if (pause) yt.pauseVideo();
     else { BG.duck(); yt.playVideo(); }
   });
   back.addEventListener("click", goBack);
