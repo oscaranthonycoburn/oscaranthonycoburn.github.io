@@ -34,6 +34,14 @@
       "body": "Watch my new YouTube video! its an unreleased song. :)",
       "pinned": false,
       "hideAfter": "2026-10-7"
+    },
+    {
+      "title": "Check out my new Tik Tok!",
+      "category": "Videos",
+      "date": "2026-10-06T12:01",
+      "body": "Check out my new videos on my social media!",
+      "pinned": false,
+      "hideAfter": "2026-10-8"
     }
   ]
 }
